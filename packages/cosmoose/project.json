@@ -1,0 +1,32 @@
+{
+  "name": "cosmoose",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/cosmoose/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/cosmoose",
+        "tsConfig": "packages/cosmoose/tsconfig.lib.json",
+        "main": "packages/cosmoose/src/index.ts",
+        "assets": ["packages/cosmoose/README.md"]
+      }
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{workspaceRoot}/coverage/packages/cosmoose"],
+      "options": {
+        "config": "packages/cosmoose/vite.config.ts"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["packages/cosmoose/**/*.ts"]
+      }
+    }
+  }
+}

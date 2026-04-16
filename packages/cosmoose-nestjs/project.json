@@ -1,0 +1,32 @@
+{
+  "name": "cosmoose-nestjs",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/cosmoose-nestjs/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/cosmoose-nestjs",
+        "tsConfig": "packages/cosmoose-nestjs/tsconfig.lib.json",
+        "main": "packages/cosmoose-nestjs/src/index.ts",
+        "assets": ["packages/cosmoose-nestjs/README.md"]
+      }
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{workspaceRoot}/coverage/packages/cosmoose-nestjs"],
+      "options": {
+        "config": "packages/cosmoose-nestjs/vite.config.ts"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["packages/cosmoose-nestjs/**/*.ts"]
+      }
+    }
+  }
+}
