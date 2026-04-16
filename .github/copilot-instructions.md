@@ -15,6 +15,7 @@ Cosmoose is a TypeScript ODM library published as two npm packages from an Nx mo
 
 ## Stack
 
+- **Runtime**: Node.js 24 (pinned via `.nvmrc`)
 - **Monorepo**: Nx (integrated mode), `packages/` layout
 - **Language**: TypeScript 6
 - **Package manager**: pnpm 10
@@ -29,3 +30,7 @@ Cosmoose is a TypeScript ODM library published as two npm packages from an Nx mo
 - `openspec/` — Spec-driven change management (proposals, designs, tasks, specs)
 - `wiki/` — Project knowledge base (architecture, conventions, how-tos — anything not in specs)
 - `packages/` — Publishable npm libraries
+
+## Rules
+
+- When project information changes (stack, conventions, architecture, patterns), update the relevant `wiki/` document to keep it current.
