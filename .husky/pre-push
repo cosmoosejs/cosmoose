@@ -1,2 +1,2 @@
-npx nx affected --target=lint
-npx nx affected --target=test
+pnpm exec nx affected --target=lint
+pnpm exec nx affected --target=test
