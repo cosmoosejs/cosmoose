@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import nxPlugin from '@nx/eslint-plugin';
 import stylisticPlugin from '@stylistic/eslint-plugin';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 
@@ -20,6 +21,7 @@ export default [
       '@nx': nxPlugin,
       '@typescript-eslint': tsPlugin,
       '@stylistic': stylisticPlugin,
+      'simple-import-sort': simpleImportSort,
     },
     rules: {
       ...tsPlugin.configs['recommended'].rules,
@@ -54,6 +56,11 @@ export default [
       'no-unreachable': 'error',
       'no-duplicate-imports': 'error',
 
+      // Import sorting rules
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
+
+      // Nx module boundary rules
       '@nx/enforce-module-boundaries': [
         'error',
         {
@@ -65,6 +72,7 @@ export default [
     },
   },
 
+  // Disable stylistic rules for legacy JS files
   stylisticPlugin.configs['disable-legacy'],
 
   {

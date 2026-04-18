@@ -32,6 +32,8 @@
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^10.2.0",
+    "eslint-plugin-simple-import-sort": "^13.0.0",
+    "globals": "^17.5.0",
     "husky": "^9.1.7",
     "nx": "^22.6.5",
     "typescript": "^6.0.2",
@@ -41,5 +43,8 @@
     "commitizen": {
       "path": "cz-conventional-changelog"
     }
+  },
+  "dependencies": {
+    "@azure/core-client": "^1.10.1"
   }
 }
