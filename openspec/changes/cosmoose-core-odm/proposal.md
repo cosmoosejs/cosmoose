@@ -17,11 +17,11 @@ Azure CosmosDB's official JavaScript SDK is schemaless — it provides no valida
 ## Capabilities
 
 ### New Capabilities
-- `schema`: Schema class with custom type system, field metadata (unique, default, optional, trim, lowercase, uppercase), partition key, TTL, composite indexes, and timestamps option — compiled to Zod schemas internally
+- `schema`: Schema class with custom type system, field metadata (default, optional, trim, lowercase, uppercase), nested container config (partition key including hierarchical, unique keys, composite indexes, TTL), and timestamps option — compiled to Zod schemas internally
 - `model`: Model class providing typed CRUD operations (create, getById, updateById, patchById with $set/$add/$incr/$unset, deleteById), batch operations (createBatch, upsertBatch, deleteMany), and query entry points
 - `query-builder`: QueryBuilder translating Mongoose-style query objects to CosmosDB SQL with support for logical operators, comparison operators, sorting, pagination (offset/limit and token-based), and cursor iteration
 - `connection`: Cosmoose connection manager wrapping CosmosClient with connect/disconnect lifecycle, model registration, and event emission
-- `migration`: Separate container provisioning function (syncContainers) for creating/configuring CosmosDB containers with partition keys, unique keys, composite indexes, TTL, and indexing policies
+- `migration`: Separate container provisioning function (syncContainers) for creating/configuring CosmosDB containers with partition keys (including hierarchical), unique keys, composite indexes, TTL, and indexing policies — with drift detection that warns on immutable property differences and auto-applies mutable changes
 - `id-generation`: UUID v7 (no hyphens) auto-generation for document IDs when not provided on create
 - `serialization`: Serialization layer for transforming between application types and database types, with CosmosDB metadata exposure (_etag, _ts, _rid, _self, _attachments)
 

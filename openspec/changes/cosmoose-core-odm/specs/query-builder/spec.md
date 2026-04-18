@@ -83,11 +83,11 @@ The QueryBuilder SHALL support offset and limit for paginated results.
 The QueryBuilder SHALL support CosmosDB continuation token pagination via `findAsTokenPagination`.
 
 #### Scenario: First page
-- **WHEN** `model.findAsTokenPagination(query, { limit: 20 }).exec()` is called without a pagination token
+- **WHEN** `await model.findAsTokenPagination(query, { limit: 20 })` is called without a pagination token
 - **THEN** the first page of results SHALL be returned with a `pagination.next` token if more results exist
 
 #### Scenario: Subsequent page
-- **WHEN** `model.findAsTokenPagination(query, { limit: 20, paginationToken: token }).exec()` is called
+- **WHEN** `await model.findAsTokenPagination(query, { limit: 20, paginationToken: token })` is called
 - **THEN** the next page of results SHALL be returned starting from the token position
 
 #### Scenario: Last page
@@ -98,31 +98,35 @@ The QueryBuilder SHALL support CosmosDB continuation token pagination via `findA
 The QueryBuilder SHALL support iterating over large result sets in batches via `findAsCursor`.
 
 #### Scenario: Cursor iteration
-- **WHEN** `model.findAsCursor(query, { batchSize: 100 }).exec()` is called
+- **WHEN** `await model.findAsCursor(query, { batchSize: 100 })` is called
 - **THEN** the result SHALL expose an `each(fn)` method that iterates over all matching documents in batches
 
 #### Scenario: Cursor processes all documents
 - **WHEN** `cursor.each(async (doc, index) => { ... })` is called
 - **THEN** the callback SHALL be invoked for every matching document with the document and its sequential index
 
-### Requirement: QueryBuilder exec resolves the correct return type
-The `.exec()` method SHALL return the appropriate type based on the query type.
+### Requirement: QueryBuilder is thenable (PromiseLike)
+The QueryBuilder SHALL implement `PromiseLike` so it can be directly awaited without an explicit `.exec()` call.
 
-#### Scenario: find exec returns array
-- **WHEN** `model.find(query).exec()` is called
-- **THEN** the result SHALL be `Promise<Document<T>[]>`
+#### Scenario: Direct await on find
+- **WHEN** `await model.find(query)` is called
+- **THEN** the result SHALL be `Document<T>[]`
 
-#### Scenario: findOne exec returns single or undefined
-- **WHEN** `model.findOne(query).exec()` is called
-- **THEN** the result SHALL be `Promise<Document<T> | undefined>`
+#### Scenario: Direct await on findOne
+- **WHEN** `await model.findOne(query)` is called
+- **THEN** the result SHALL be `Document<T> | undefined`
 
-#### Scenario: count exec returns number
-- **WHEN** `model.count(query).exec()` is called
-- **THEN** the result SHALL be `Promise<number>`
+#### Scenario: Direct await on count
+- **WHEN** `await model.count(query)` is called
+- **THEN** the result SHALL be `number`
 
-#### Scenario: findAll exec returns array
-- **WHEN** `model.findAll(query).exec()` is called
-- **THEN** the result SHALL be `Promise<Document<T>[]>` with no limit applied
+#### Scenario: Direct await on findAll
+- **WHEN** `await model.findAll(query)` is called
+- **THEN** the result SHALL be `Document<T>[]` with no limit applied
+
+#### Scenario: Chaining then await
+- **WHEN** `await model.find(query).sort({ createdAt: -1 }).limit(10)` is called
+- **THEN** the query SHALL execute with the chained options and return results directly
 
 ### Requirement: QueryBuilder uses parameterized queries
 All generated SQL SHALL use parameterized queries to prevent SQL injection.

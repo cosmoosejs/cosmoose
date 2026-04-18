@@ -1,19 +1,31 @@
 ## ADDED Requirements
 
 ### Requirement: Schema class accepts a typed definition and options
-The Schema class SHALL accept a generic type parameter and a definition object mapping field names to type descriptors, plus optional schema-level configuration.
+The Schema class SHALL accept a generic type parameter and a definition object mapping field names to type descriptors, plus optional schema-level configuration split into app-level and container-level tiers.
 
 #### Scenario: Construct a schema with field definitions
 - **WHEN** a Schema is created with `new Schema<T>(definition, options)`
 - **THEN** the schema SHALL store the definition and options for use by Model and migration
 
-#### Scenario: Schema with partition key option
-- **WHEN** a Schema is created with `{ partitionKey: '/networkId' }` in options
-- **THEN** `schema.getPartitionKey()` SHALL return the partition key definition
+#### Scenario: Schema with container partition key option
+- **WHEN** a Schema is created with `{ container: { partitionKey: '/networkId' } }` in options
+- **THEN** `schema.getContainerConfig().partitionKey` SHALL return the partition key definition
 
-#### Scenario: Schema with TTL option
-- **WHEN** a Schema is created with `{ ttl: 3600 }` in options
-- **THEN** `schema.getTtl()` SHALL return `3600`
+#### Scenario: Schema with container TTL option
+- **WHEN** a Schema is created with `{ container: { ttl: 3600 } }` in options
+- **THEN** `schema.getContainerConfig().ttl` SHALL return `3600`
+
+#### Scenario: Schema with container unique keys
+- **WHEN** a Schema is created with `{ container: { uniqueKeys: [['/email', '/networkId']] } }` in options
+- **THEN** `schema.getContainerConfig().uniqueKeys` SHALL return the unique key paths
+
+#### Scenario: Schema with container composite indexes
+- **WHEN** a Schema is created with `{ container: { compositeIndexes: [{ '/createdAt': 1, '/status': -1 }] } }` in options
+- **THEN** `schema.getContainerConfig().compositeIndexes` SHALL return the composite index definitions
+
+#### Scenario: Schema with container hierarchical partition key
+- **WHEN** a Schema is created with `{ container: { partitionKey: { paths: ['/tenantId', '/userId'], kind: 'MultiHash' } } }` in options
+- **THEN** `schema.getContainerConfig().partitionKey` SHALL return the hierarchical partition key definition
 
 #### Scenario: Schema with timestamps option
 - **WHEN** a Schema is created with `{ timestamps: true }` in options
@@ -66,7 +78,7 @@ The type system SHALL support `OBJECT`, `ARRAY`, and `MAP` as complex field type
 - **THEN** the compiled Zod schema SHALL validate a `Record<string, number>` structure
 
 ### Requirement: Field metadata controls validation behavior
-Fields SHALL support `unique`, `optional`, and `default` metadata.
+Fields SHALL support `optional` and `default` metadata.
 
 #### Scenario: Optional field on create
 - **WHEN** a field is defined with `{ optional: true }`
@@ -79,10 +91,6 @@ Fields SHALL support `unique`, `optional`, and `default` metadata.
 #### Scenario: Default value on create
 - **WHEN** a field is defined with `{ default: 'value' }` and the field is omitted on create
 - **THEN** the create validation SHALL populate the field with the default value
-
-#### Scenario: Unique field metadata
-- **WHEN** a field is defined with `{ unique: true }`
-- **THEN** `schema.getUniqueKeys()` SHALL include that field's path in the unique key collection
 
 ### Requirement: Schema compiles to Zod schemas internally
 The Schema class SHALL generate Zod schemas from the type definition for use in validation.
@@ -99,24 +107,13 @@ The Schema class SHALL generate Zod schemas from the type definition for use in 
 - **WHEN** the schema compiles a deserialize variant
 - **THEN** it SHALL produce a Zod schema that transforms ISO date strings to Date objects and includes CosmosDB metadata fields
 
-### Requirement: Schema supports composite unique keys
-Composite unique keys SHALL be configurable after schema construction.
+### Requirement: Schema exposes container configuration
+The Schema class SHALL expose its container configuration for use by the migration layer.
 
-#### Scenario: Add composite unique key
-- **WHEN** `schema.addCompositeUniqueKey(['/field1', '/field2'])` is called
-- **THEN** `schema.getUniqueKeys()` SHALL include `['/field1', '/field2']` in the collection
+#### Scenario: Get container config
+- **WHEN** `schema.getContainerConfig()` is called
+- **THEN** it SHALL return the container configuration object with partition key, unique keys, composite indexes, and TTL
 
-#### Scenario: Invalid unique key format
-- **WHEN** `schema.addCompositeUniqueKey(['field1'])` is called without a leading `/`
-- **THEN** the schema SHALL throw an error indicating invalid key format
-
-### Requirement: Schema supports composite indexes
-Composite indexes SHALL be configurable after schema construction.
-
-#### Scenario: Add composite index
-- **WHEN** `schema.addCompositeIndex({ '/createdAt': 1, '/status': -1 })` is called
-- **THEN** `schema.getCompositeIndexes()` SHALL include the index with ascending/descending order
-
-#### Scenario: Invalid index key format
-- **WHEN** `schema.addCompositeIndex({ 'field': 1 })` is called without a leading `/`
-- **THEN** the schema SHALL throw an error indicating invalid index key format
+#### Scenario: Container config defaults
+- **WHEN** no `container` option is provided
+- **THEN** `schema.getContainerConfig()` SHALL return an object with all properties undefined

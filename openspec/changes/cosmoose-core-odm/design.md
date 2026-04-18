@@ -12,7 +12,7 @@ The stack is TypeScript 6, Node.js 24, Vitest, built with Vite via Nx.
 ## Goals / Non-Goals
 
 **Goals:**
-- Mongoose-familiar API surface: `Schema`, `Model`, `cosmoose.connect()`, `cosmoose.model()`, `model.find(query).exec()`
+- Mongoose-familiar API surface: `Schema`, `Model`, `cosmoose.connect()`, `cosmoose.model()`, `await model.find(query)`
 - Custom type system with database-specific metadata (partition keys, unique keys, TTL, composite indexes)
 - Zod as internal validation engine — replacing AJV from asap-backend
 - Type-safe CRUD with proper TypeScript inference from schema to model operations
@@ -34,7 +34,21 @@ The stack is TypeScript 6, Node.js 24, Vitest, built with Vite via Nx.
 
 **Decision**: Keep Mongoose-style `{ type: Type.STRING, trim: true }` schema definitions. Internally compile them to Zod schemas for validation.
 
-**Why not Zod schemas directly?** The type definition carries database-level metadata (unique keys, partition keys, composite indexes) that Zod has no concept of. A custom type system lets the schema be the single source of truth for both validation AND container configuration.
+**Why not Zod schemas directly?** The type definition carries database-level metadata that Zod has no concept of. A custom type system lets the schema be the single source of truth for both validation AND container configuration.
+
+**Schema options are split into two tiers** — app-level options (timestamps) live at the top, and container-level config (partition key, unique keys, composite indexes, TTL) is nested under a `container` key. This clearly separates mutable app concerns from infrastructure concerns that may be immutable after container creation:
+
+```ts
+new Schema<User>(definition, {
+  timestamps: true,              // app-level, freely changeable
+  container: {                   // infra-level, used by syncContainers()
+    partitionKey: '/networkId',  // immutable after creation
+    uniqueKeys: [["/email"]],   // immutable after creation
+    compositeIndexes: [...],     // mutable (indexing policy update)
+    ttl: 3600,                   // mutable (container settings)
+  },
+});
+```
 
 **Why Zod over AJV?** The asap-backend approach generates JSON Schema objects and feeds them to AJV. This works but is verbose, error-prone (manual JSON Schema construction), and loses TypeScript type inference. Zod provides:
 - Built-in transforms (trim, toLowerCase) without post-processing
@@ -78,6 +92,12 @@ The stack is TypeScript 6, Node.js 24, Vitest, built with Vite via Nx.
 
 **Migration function responsibilities**: Create container with partition key, apply unique key policy, apply composite indexes, set TTL, configure indexing policy.
 
+**Drift detection**: When `syncContainers()` runs against an existing container, it SHALL read the container's current configuration and compare it against the schema's `container` config. For each difference:
+- **Immutable drift** (partition key, unique keys): Warn with the exact diff and explain the property cannot be changed after creation — the container must be recreated.
+- **Mutable drift** (composite indexes, TTL, indexing policy): Apply the update automatically, or warn if the update fails.
+
+This prevents silent misconfiguration where a developer changes a partition key in the schema and assumes it took effect.
+
 ### 5. Full CosmosDB metadata exposure
 
 **Decision**: `Document<T>` includes `_etag`, `_ts`, `_rid`, `_self`, `_attachments` alongside user fields.
@@ -94,12 +114,12 @@ The stack is TypeScript 6, Node.js 24, Vitest, built with Vite via Nx.
 
 **Decision**: Translate Mongoose-style query objects to CosmosDB SQL. Support `$or`, `$and`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`. Parameterized queries (prevent SQL injection).
 
-**Query types**: `find` (paginated), `findAll` (no limit), `findOne`, `count`, `findAsCursor` (batch iteration), `findAsTokenPagination` (continuation token). All return a `QueryBuilder` with `.sort()`, `.limit()`, `.offset()`, `.exec()`.
+**Query types**: `find` (paginated), `findAll` (no limit), `findOne`, `count`, `findAsCursor` (batch iteration), `findAsTokenPagination` (continuation token). All return a `QueryBuilder` with `.sort()`, `.limit()`, `.offset()`. The QueryBuilder implements `PromiseLike` so it can be directly awaited — no `.exec()` call needed.
 
 ## Risks / Trade-offs
 
 - **[Zod compilation performance]** → Compile Zod schemas once on Schema construction and cache. Different operation variants (create, patch, deserialize) are generated lazily and cached.
-- **[CosmosDB unique key immutability]** → Once a container is created with a unique key policy, it cannot be changed. `syncContainers()` will document this limitation — migration handles creation only, not schema evolution.
+- **[CosmosDB unique key immutability]** → Once a container is created with a unique key policy, it cannot be changed. `syncContainers()` detects drift between schema definition and existing container and warns with reasons. Developers must recreate the container to change immutable properties.
 - **[UUID v7 dependency]** → Adds `uuid` as a runtime dependency. Small footprint (~10KB), well-maintained, standard library. Acceptable trade-off.
 - **[QueryBuilder SQL coverage]** → Not all MongoDB query operators map to CosmosDB SQL. Unsupported operators should throw clear errors at query construction time, not at execution.
 - **[Patch operation batching]** → CosmosDB limits patch operations to 10 per request. Model must batch and execute sequentially when operations exceed 10. This adds latency for large patches.
