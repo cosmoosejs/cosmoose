@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { Type } from '../types/type.js';
+import { Type } from '~/types/type.js';
+
 import { Schema } from './schema.js';
 
 describe('Schema', () => {

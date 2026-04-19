@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { Schema } from '../schema/schema.js';
-import { Type } from '../types/type.js';
+import { Schema } from '~/schema/schema.js';
+import { Type } from '~/types/type.js';
+
 import { QueryBuilder } from './query-builder.js';
 
 // Minimal mock container — we only test SQL generation via buildQuery()

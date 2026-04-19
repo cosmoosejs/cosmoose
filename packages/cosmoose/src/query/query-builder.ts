@@ -1,7 +1,7 @@
 import type { Container, FeedOptions, JSONValue, SqlParameter, SqlQuerySpec } from '@azure/cosmos';
 
-import type { Schema } from '../schema/schema.js';
-import type { Document } from '../types/document.js';
+import type { Schema } from '~/schema/schema.js';
+import type { Document } from '~/types/document.js';
 
 export type QueryType = 'find' | 'findAll' | 'findOne' | 'count' | 'findAsCursor' | 'findAsTokenPagination';
 

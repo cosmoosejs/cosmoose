@@ -1,7 +1,7 @@
 import { type ContainerDefinition, type Database, type IndexingPolicy,PartitionKeyKind } from '@azure/cosmos';
 
-import type { Schema } from '../schema/schema.js';
-import type { CompositeIndexEntry, ContainerConfig, PartitionKeyDefinition } from '../types/index.js';
+import type { Schema } from '~/schema/schema.js';
+import type { CompositeIndexEntry, ContainerConfig, PartitionKeyDefinition } from '~/types/index.js';
 
 export type ContainerSyncStatus = 'created' | 'updated' | 'drift' | 'unchanged';
 
@@ -26,37 +26,29 @@ interface RegisteredModel {
   schema: Schema<Record<string, unknown>>;
 }
 
-export async function syncContainers (
-  database: Database,
-  models: Map<string, RegisteredModel>,
-): Promise<SyncReport> {
+export async function syncContainers (database: Database, models: Map<string, RegisteredModel>): Promise<SyncReport> {
   const report: SyncReport = [];
 
   for (const [ name, { schema } ] of models) {
     const result = await syncSingleContainer(database, name, schema.getContainerConfig());
+
     report.push(result);
   }
 
   return report;
 }
 
-export async function syncContainer (
-  database: Database,
-  models: Map<string, RegisteredModel>,
-  name: string,
-): Promise<ContainerSyncResult> {
+export async function syncContainer (database: Database, models: Map<string, RegisteredModel>, name: string): Promise<ContainerSyncResult> {
   const registered = models.get(name);
+
   if (!registered) {
     throw new Error(`Model "${name}" is not registered.`);
   }
+
   return syncSingleContainer(database, name, registered.schema.getContainerConfig());
 }
 
-async function syncSingleContainer (
-  database: Database,
-  name: string,
-  config: ContainerConfig,
-): Promise<ContainerSyncResult> {
+async function syncSingleContainer (database: Database, name: string, config: ContainerConfig): Promise<ContainerSyncResult> {
   const partitionKey = resolvePartitionKey(config.partitionKey);
   const uniqueKeyPolicy = config.uniqueKeys
     ? { uniqueKeys: config.uniqueKeys.map((paths) => ({ paths })) }
@@ -91,6 +83,7 @@ async function syncSingleContainer (
   if (config.partitionKey) {
     const expectedPaths = getPartitionKeyPaths(config.partitionKey);
     const actualPaths = existingResource.partitionKey?.paths ?? [];
+
     if (JSON.stringify(expectedPaths) !== JSON.stringify(actualPaths)) {
       driftDetails.push({
         property: 'partitionKey',
@@ -106,6 +99,7 @@ async function syncSingleContainer (
   if (config.uniqueKeys) {
     const expectedUK = config.uniqueKeys.map((paths) => ({ paths }));
     const actualUK = existingResource.uniqueKeyPolicy?.uniqueKeys ?? [];
+
     if (JSON.stringify(expectedUK) !== JSON.stringify(actualUK)) {
       driftDetails.push({
         property: 'uniqueKeyPolicy',
@@ -148,6 +142,7 @@ async function syncSingleContainer (
     if (JSON.stringify(expectedComposites) !== JSON.stringify(actualComposites)) {
       try {
         const currentIndexingPolicy = existingResource.indexingPolicy ?? {};
+
         await container.replace({
           ...existingResource,
           indexingPolicy: {
@@ -155,6 +150,7 @@ async function syncSingleContainer (
             compositeIndexes: expectedComposites,
           },
         });
+
         updatedProperties.push('compositeIndexes');
       } catch {
         driftDetails.push({
@@ -174,9 +170,11 @@ async function syncSingleContainer (
   if (hasImmutableDrift) {
     return { name, status: 'drift', driftDetails };
   }
+
   if (hasUpdates) {
     return { name, status: 'updated', updatedProperties, driftDetails: driftDetails.length > 0 ? driftDetails : undefined };
   }
+
   if (driftDetails.length > 0) {
     return { name, status: 'drift', driftDetails };
   }
@@ -188,9 +186,11 @@ function resolvePartitionKey (pk?: PartitionKeyDefinition) {
   if (!pk) {
     return undefined;
   }
+
   if (typeof pk === 'string') {
     return { paths: [ pk ], kind: PartitionKeyKind.Hash };
   }
+
   return {
     paths: pk.paths,
     kind: pk.kind === 'MultiHash' ? PartitionKeyKind.MultiHash : PartitionKeyKind.Hash,
@@ -201,6 +201,7 @@ function getPartitionKeyPaths (pk: PartitionKeyDefinition): string[] {
   if (typeof pk === 'string') {
     return [ pk ];
   }
+
   return pk.paths;
 }
 

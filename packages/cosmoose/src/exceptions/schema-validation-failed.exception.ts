@@ -5,6 +5,7 @@ export class SchemaValidationFailedException extends Error {
 
   constructor (zodError: ZodError) {
     super(`Schema validation failed: ${zodError.message}`);
+
     this.name = 'SchemaValidationFailedException';
     this.errors = zodError.errors;
   }

@@ -1,8 +1,9 @@
 import { PartitionKeyKind } from '@azure/cosmos';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Schema } from '../schema/schema.js';
-import { Type } from '../types/type.js';
+import { Schema } from '~/schema/schema.js';
+import { Type } from '~/types/type.js';
+
 import { syncContainer, syncContainers } from './sync-containers.js';
 
 function createMockDatabase (existingContainers: Record<string, unknown> = {}) {

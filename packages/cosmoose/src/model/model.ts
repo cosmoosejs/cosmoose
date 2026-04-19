@@ -1,12 +1,12 @@
 import { BulkOperationType, type Container, type JSONObject, type PartitionKey, type PatchOperation, type SqlQuerySpec } from '@azure/cosmos';
 import type { ZodError } from 'zod';
 
-import { SchemaValidationFailedException } from '../exceptions/schema-validation-failed.exception.js';
-import { generateId } from '../id/generate-id.js';
-import { QueryBuilder } from '../query/query-builder.js';
-import { Schema } from '../schema/schema.js';
-import type { Document } from '../types/document.js';
-import type { PatchExpression } from '../types/patch-expression.js';
+import { SchemaValidationFailedException } from '~/exceptions/schema-validation-failed.exception.js';
+import { generateId } from '~/id/generate-id.js';
+import { QueryBuilder } from '~/query/query-builder.js';
+import { Schema } from '~/schema/schema.js';
+import type { Document } from '~/types/document.js';
+import type { PatchExpression } from '~/types/patch-expression.js';
 
 type QueryFilter = Record<string, unknown>;
 
@@ -31,6 +31,7 @@ export class Model<T extends Record<string, unknown>> {
   async create (data: Partial<T> & Record<string, unknown>): Promise<Document<T>> {
     const createSchema = this.schema.getCreateSchema();
     const result = createSchema.safeParse(data);
+
     if (!result.success) {
       throw new SchemaValidationFailedException(result.error as ZodError);
     }
@@ -43,6 +44,7 @@ export class Model<T extends Record<string, unknown>> {
 
     if (this.schema.getOptions().timestamps) {
       const now = new Date();
+
       validated['createdAt'] = now.toISOString();
       validated['updatedAt'] = now.toISOString();
     }
@@ -51,6 +53,7 @@ export class Model<T extends Record<string, unknown>> {
     this.serializeDates(validated);
 
     const { resource } = await this.container.items.create(validated);
+
     return this.schema.getDeserializeSchema().parse(resource) as Document<T>;
   }
 
@@ -58,25 +61,25 @@ export class Model<T extends Record<string, unknown>> {
     try {
       const partitionKey = options?.partitionKeyValue;
       const { resource } = await this.container.item(id, partitionKey).read();
+
       if (!resource) {
         return undefined;
       }
+
       return this.schema.getDeserializeSchema().parse(resource) as Document<T>;
     } catch (err: unknown) {
       if (isNotFoundError(err)) {
         return undefined;
       }
+
       throw err;
     }
   }
 
-  async updateById (
-    id: string,
-    data: Partial<T> & Record<string, unknown>,
-    options?: PartitionKeyOption,
-  ): Promise<Document<T> | undefined> {
+  async updateById (id: string, data: Partial<T> & Record<string, unknown>, options?: PartitionKeyOption): Promise<Document<T> | undefined> {
     try {
       const existing = await this.getById(id, options);
+
       if (!existing) {
         return undefined;
       }
@@ -92,20 +95,18 @@ export class Model<T extends Record<string, unknown>> {
 
       const partitionKey = options?.partitionKeyValue;
       const { resource } = await this.container.item(id, partitionKey).replace(merged);
+
       return this.schema.getDeserializeSchema().parse(resource) as Document<T>;
     } catch (err: unknown) {
       if (isNotFoundError(err)) {
         return undefined;
       }
+
       throw err;
     }
   }
 
-  async patchById (
-    id: string,
-    expression: PatchExpression<T> | Partial<T>,
-    options?: PartitionKeyOption,
-  ): Promise<Document<T> | undefined> {
+  async patchById (id: string, expression: PatchExpression<T> | Partial<T>, options?: PartitionKeyOption): Promise<Document<T> | undefined> {
     try {
       const operations = this.buildPatchOperations(expression as Record<string, unknown>);
 
@@ -122,6 +123,7 @@ export class Model<T extends Record<string, unknown>> {
       // Batch operations if > 10
       if (operations.length <= 10) {
         const { resource } = await this.container.item(id, partitionKey).patch(operations);
+
         return this.schema.getDeserializeSchema().parse(resource) as Document<T>;
       }
 
@@ -131,11 +133,13 @@ export class Model<T extends Record<string, unknown>> {
         const { resource } = await this.container.item(id, partitionKey).patch(batch);
         lastResource = resource;
       }
+
       return this.schema.getDeserializeSchema().parse(lastResource) as Document<T>;
     } catch (err: unknown) {
       if (isNotFoundError(err)) {
         return undefined;
       }
+
       throw err;
     }
   }
@@ -144,40 +148,45 @@ export class Model<T extends Record<string, unknown>> {
     try {
       const partitionKey = options?.partitionKeyValue;
       await this.container.item(id, partitionKey).delete();
+
       return true;
     } catch (err: unknown) {
       if (isNotFoundError(err)) {
         return undefined;
       }
+
       throw err;
     }
   }
 
-  async createBatch (
-    items: (Partial<T> & Record<string, unknown>)[],
-    options?: { retryOnError?: boolean },
-  ): Promise<BatchResult<T>> {
+  async createBatch (items: (Partial<T> & Record<string, unknown>)[], options?: { retryOnError?: boolean }): Promise<BatchResult<T>> {
     const createSchema = this.schema.getCreateSchema();
     const hasTimestamps = this.schema.getOptions().timestamps;
     const succeed: Document<T>[] = [];
     const failed: { item: unknown; error: unknown }[] = [];
 
     const prepared: Record<string, unknown>[] = [];
+
     for (const item of items) {
       const result = createSchema.safeParse(item);
+
       if (!result.success) {
         failed.push({ item, error: result.error });
         continue;
       }
+
       const validated = result.data as Record<string, unknown>;
+
       if (!validated['id']) {
         validated['id'] = generateId();
       }
+
       if (hasTimestamps) {
         const now = new Date().toISOString();
         validated['createdAt'] = now;
         validated['updatedAt'] = now;
       }
+
       this.serializeDates(validated);
       prepared.push(validated);
     }
@@ -197,10 +206,9 @@ export class Model<T extends Record<string, unknown>> {
 
       for (let i = 0; i < response.length; i++) {
         const result = response[i];
+
         if (result.statusCode >= 200 && result.statusCode < 300) {
-          succeed.push(
-            this.schema.getDeserializeSchema().parse(result.resourceBody) as Document<T>,
-          );
+          succeed.push(this.schema.getDeserializeSchema().parse(result.resourceBody) as Document<T>);
         } else if (result.statusCode === 429 && retryCount < maxRetries) {
           toRetry.push(pendingOps[i]);
         } else {
@@ -214,18 +222,18 @@ export class Model<T extends Record<string, unknown>> {
       if (toRetry.length === 0 || retryCount >= maxRetries) {
         break;
       }
+
       retryCount++;
       const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
       await new Promise((resolve) => setTimeout(resolve, delay));
+
       pendingOps = toRetry;
     }
 
     return { succeed, failed };
   }
 
-  async upsertBatch (
-    items: (Partial<T> & Record<string, unknown>)[],
-  ): Promise<BatchResult<T>> {
+  async upsertBatch (items: (Partial<T> & Record<string, unknown>)[]): Promise<BatchResult<T>> {
     const createSchema = this.schema.getCreateSchema();
     const hasTimestamps = this.schema.getOptions().timestamps;
     const succeed: Document<T>[] = [];
@@ -234,19 +242,24 @@ export class Model<T extends Record<string, unknown>> {
     const prepared: Record<string, unknown>[] = [];
     for (const item of items) {
       const result = createSchema.safeParse(item);
+
       if (!result.success) {
         failed.push({ item, error: result.error });
         continue;
       }
+
       const validated = result.data as Record<string, unknown>;
+
       if (!validated['id']) {
         validated['id'] = generateId();
       }
+
       if (hasTimestamps) {
         const now = new Date().toISOString();
         validated['createdAt'] = now;
         validated['updatedAt'] = now;
       }
+
       this.serializeDates(validated);
       prepared.push(validated);
     }
@@ -260,6 +273,7 @@ export class Model<T extends Record<string, unknown>> {
 
     for (let i = 0; i < response.length; i++) {
       const result = response[i];
+
       if (result.statusCode >= 200 && result.statusCode < 300) {
         succeed.push(
           this.schema.getDeserializeSchema().parse(result.resourceBody) as Document<T>,
@@ -309,19 +323,13 @@ export class Model<T extends Record<string, unknown>> {
     return new QueryBuilder(this.container, this.schema, 'count', filter);
   }
 
-  findAsCursor (
-    filter: QueryFilter = {},
-    options?: { batchSize?: number },
-  ): QueryBuilder<T, 'findAsCursor'> {
+  findAsCursor (filter: QueryFilter = {}, options?: { batchSize?: number }): QueryBuilder<T, 'findAsCursor'> {
     return new QueryBuilder(this.container, this.schema, 'findAsCursor', filter, {
       batchSize: options?.batchSize,
     });
   }
 
-  findAsTokenPagination (
-    filter: QueryFilter = {},
-    options?: { limit?: number; paginationToken?: string },
-  ): QueryBuilder<T, 'findAsTokenPagination'> {
+  findAsTokenPagination (filter: QueryFilter = {}, options?: { limit?: number; paginationToken?: string }): QueryBuilder<T, 'findAsTokenPagination'> {
     return new QueryBuilder(this.container, this.schema, 'findAsTokenPagination', filter, {
       limit: options?.limit,
       paginationToken: options?.paginationToken,
@@ -333,17 +341,16 @@ export class Model<T extends Record<string, unknown>> {
       query: `SELECT * FROM root r WHERE r.id IN (${ids.map((_, i) => `@id${i}`).join(', ')})`,
       parameters: ids.map((id, i) => ({ name: `@id${i}`, value: id })),
     };
+
     const { resources } = await this.container.items.query(querySpec).fetchAll();
-    return resources.map((item: unknown) =>
-      this.schema.getDeserializeSchema().parse(item) as Document<T>,
-    );
+
+    return resources.map((item: unknown) => this.schema.getDeserializeSchema().parse(item) as Document<T>);
   }
 
   async rawQuery (querySpec: SqlQuerySpec): Promise<Document<T>[]> {
     const { resources } = await this.container.items.query(querySpec).fetchAll();
-    return resources.map((item: unknown) =>
-      this.schema.getDeserializeSchema().parse(item) as Document<T>,
-    );
+
+    return resources.map((item: unknown) => this.schema.getDeserializeSchema().parse(item) as Document<T>);
   }
 
   private buildPatchOperations (expression: Record<string, unknown>): PatchOperation[] {
@@ -361,6 +368,7 @@ export class Model<T extends Record<string, unknown>> {
       for (const [ key, value ] of Object.entries(expression)) {
         this.flattenSetOperations(operations, `/${key}`, value);
       }
+
       return operations;
     }
 
@@ -391,11 +399,7 @@ export class Model<T extends Record<string, unknown>> {
     return operations;
   }
 
-  private flattenSetOperations (
-    operations: PatchOperation[],
-    path: string,
-    value: unknown,
-  ): void {
+  private flattenSetOperations (operations: PatchOperation[], path: string, value: unknown): void {
     if (value !== null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
       for (const [ key, nested ] of Object.entries(value as Record<string, unknown>)) {
         this.flattenSetOperations(operations, `${path}/${key}`, nested);

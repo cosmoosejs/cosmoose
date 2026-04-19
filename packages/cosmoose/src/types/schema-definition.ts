@@ -1,4 +1,5 @@
-import type { Schema } from '../schema/schema.js';
+import type { Schema } from '~/schema/schema.js';
+
 import { Type } from './type.js';
 
 export interface BaseFieldDescriptor {

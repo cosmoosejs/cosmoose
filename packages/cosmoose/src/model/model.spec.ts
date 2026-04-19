@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { SchemaValidationFailedException } from '../exceptions/schema-validation-failed.exception.js';
-import { Schema } from '../schema/schema.js';
-import { Type } from '../types/type.js';
+import { SchemaValidationFailedException } from '~/exceptions/schema-validation-failed.exception.js';
+import { Schema } from '~/schema/schema.js';
+import { Type } from '~/types/type.js';
+
 import { Model } from './model.js';
 
 function createMockContainer () {

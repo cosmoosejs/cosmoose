@@ -5,7 +5,7 @@
   "projectType": "library",
   "tags": [],
   "targets": {
-    "build": {
+    "compile": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
@@ -13,6 +13,15 @@
         "tsConfig": "packages/cosmoose-nestjs/tsconfig.lib.json",
         "main": "packages/cosmoose-nestjs/src/index.ts",
         "assets": ["packages/cosmoose-nestjs/README.md"]
+      },
+      "dependsOn": ["^build"]
+    },
+    "build": {
+      "dependsOn": ["compile"],
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/packages/cosmoose-nestjs"],
+      "options": {
+        "command": "tsc-alias -p packages/cosmoose-nestjs/tsconfig.lib.json --outDir dist/packages/cosmoose-nestjs"
       }
     },
     "test": {

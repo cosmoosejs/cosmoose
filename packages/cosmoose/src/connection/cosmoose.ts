@@ -1,5 +1,4 @@
 import { EventEmitter } from 'node:events';
-
 import { type Container, CosmosClient, type Database } from '@azure/cosmos';
 
 import {
@@ -7,9 +6,9 @@ import {
   syncContainer as syncContainerFn,
   syncContainers as syncContainersFn,
   type SyncReport,
-} from '../migration/sync-containers.js';
-import { Model } from '../model/model.js';
-import type { Schema } from '../schema/schema.js';
+} from '~/migration/sync-containers.js';
+import { Model } from '~/model/model.js';
+import type { Schema } from '~/schema/schema.js';
 
 export interface CosmooseOptions {
   endpoint: string;
@@ -32,6 +31,7 @@ export class Cosmoose extends EventEmitter {
 
   constructor (options: CosmooseOptions) {
     super();
+
     this.client = new CosmosClient({ endpoint: options.endpoint, key: options.key });
     this.databaseName = options.databaseName;
   }
@@ -42,7 +42,9 @@ export class Cosmoose extends EventEmitter {
     }
 
     this.emit('initiate');
+
     const { database } = await this.client.databases.createIfNotExists({ id: this.databaseName });
+
     this.database = database;
     this.connected = true;
     this.emit('initiated', this.databaseName);
@@ -59,7 +61,9 @@ export class Cosmoose extends EventEmitter {
 
     const container = this.database.container(name);
     const model = new Model<T>(container, schema);
-    this.models.set(name, { schema, model, container } as RegisteredModel);
+
+    this.models.set(name, { schema, model, container });
+
     return model;
   }
 
@@ -79,6 +83,7 @@ export class Cosmoose extends EventEmitter {
     if (!this.database) {
       throw new Error('Database is not connected. Call connect() first.');
     }
+
     return syncContainersFn(this.database, this.models);
   }
 
@@ -86,6 +91,7 @@ export class Cosmoose extends EventEmitter {
     if (!this.database) {
       throw new Error('Database is not connected. Call connect() first.');
     }
+
     return syncContainerFn(this.database, this.models, name);
   }
 }

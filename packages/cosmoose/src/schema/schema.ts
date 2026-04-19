@@ -4,8 +4,8 @@ import type {
   ContainerConfig,
   FieldDescriptor,
   SchemaDefinition,
-} from '../types/index.js';
-import { Type } from '../types/type.js';
+} from '~/types/index.js';
+import { Type } from '~/types/type.js';
 
 export interface SchemaOptions {
   timestamps?: boolean;

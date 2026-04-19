@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { Schema } from '../schema/schema.js';
-import { Type } from '../types/type.js';
+import { Schema } from '~/schema/schema.js';
+import { Type } from '~/types/type.js';
+
 import { Cosmoose } from './cosmoose.js';
 
 // Mock @azure/cosmos
