@@ -5,6 +5,8 @@
   "scripts": {
     "build": "nx run-many --target=build",
     "test": "nx run-many --target=test",
+    "test:coverage": "nx run-many --target=test -- --coverage",
+    "test:integration": "nx run-many --target=test:integration",
     "lint": "nx run-many --target=lint",
     "prepare": "husky",
     "commit": "cz"
@@ -14,7 +16,10 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "nx"
-    ]
+    ],
+    "overrides": {
+      "@cosmoose/core": "workspace:*"
+    }
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -25,9 +30,11 @@
     "@nx/vitest": "^22.6.5",
     "@nx/workspace": "^22.6.5",
     "@stylistic/eslint-plugin": "^5.10.0",
+    "@testcontainers/azure-cosmosdb-emulator": "^11.14.0",
     "@types/node": "^25.6.0",
     "@typescript-eslint/eslint-plugin": "^8.58.2",
     "@typescript-eslint/parser": "^8.58.2",
+    "@vitest/coverage-v8": "^4.1.4",
     "@vitest/runner": "^4.1.4",
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
@@ -36,6 +43,7 @@
     "globals": "^17.5.0",
     "husky": "^9.1.7",
     "nx": "^22.6.5",
+    "testcontainers": "^11.14.0",
     "tsc-alias": "^1.8.16",
     "typescript": "^6.0.2",
     "vitest": "^4.1.4"
