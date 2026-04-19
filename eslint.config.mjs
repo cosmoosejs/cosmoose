@@ -57,7 +57,18 @@ export default [
       'no-duplicate-imports': 'error',
 
       // Import sorting rules
-      'simple-import-sort/imports': 'error',
+      'simple-import-sort/imports': [ 'error', {
+        groups: [
+          // Side-effect imports
+          [ '^\\u0000' ],
+          // Node builtins & external packages
+          [ '^node:', '^@?\\w' ],
+          // Internal alias imports (~)
+          [ '^~/' ],
+          // Relative imports
+          [ '^\\.' ],
+        ],
+      } ],
       'simple-import-sort/exports': 'error',
 
       // Nx module boundary rules
