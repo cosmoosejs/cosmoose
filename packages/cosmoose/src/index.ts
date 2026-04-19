@@ -1,14 +1,25 @@
 // Connection
-export { Cosmoose, type CosmooseOptions } from './connection/index.js';
+export {
+  Cosmoose,
+  type CosmooseOptions,
+} from './connection/index.js';
 
 // Schema
-export { Schema, type SchemaOptions } from './schema/index.js';
+export {
+  Schema,
+  type SchemaOptions,
+} from './schema/index.js';
 
 // Model
 export { Model } from './model/index.js';
 
 // Query
-export { type Cursor, QueryBuilder, type QueryType, type TokenPaginationResult } from './query/index.js';
+export {
+  type Cursor,
+  QueryBuilder,
+  type QueryType,
+  type TokenPaginationResult,
+} from './query/index.js';
 
 // Types
 export type {
