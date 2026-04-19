@@ -222,13 +222,6 @@ describe('QueryBuilder', () => {
   });
 
   describe('exec()', () => {
-    function createMockContainer () {
-      const mockItems = {
-        query: vi.fn(),
-      };
-      return { items: mockItems } as never;
-    }
-
     function createMockContainerWith (queryResult: unknown) {
       const container = {
         items: {
@@ -320,7 +313,9 @@ describe('QueryBuilder', () => {
 
       const cursor = await qb.exec();
       const docs: unknown[] = [];
-      await (cursor as { each: (fn: (doc: unknown) => void) => Promise<void> }).each((doc) => { docs.push(doc); });
+      await (cursor as { each: (fn: (doc: unknown) => void) => Promise<void> }).each((doc) => {
+        docs.push(doc);
+      });
       expect(docs).toHaveLength(1);
     });
 

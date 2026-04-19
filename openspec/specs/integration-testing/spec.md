@@ -88,14 +88,3 @@ Integration tests SHALL verify that `Model.bulkCreate()` and other bulk operatio
 #### Scenario: Bulk create documents
 - **WHEN** multiple documents are created via bulk operation
 - **THEN** all documents SHALL be retrievable individually via `Model.findById()`
-
-### Requirement: Spike verification of emulator limitations
-Before writing full test suites, a spike test SHALL verify emulator behavior for features marked "not yet implemented" (custom indexing policies and container update/replace).
-
-#### Scenario: Custom indexing policy behavior
-- **WHEN** `syncContainers()` is called with a schema defining composite indexes
-- **THEN** the spike SHALL document whether the emulator accepts, ignores, or rejects the request
-
-#### Scenario: Container replace behavior
-- **WHEN** `container.replace()` is called to update a container definition
-- **THEN** the spike SHALL document whether the emulator accepts, ignores, or rejects the request

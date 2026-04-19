@@ -1,5 +1,7 @@
-import { AzureCosmosDbEmulatorContainer } from '@testcontainers/azure-cosmosdb-emulator';
-import type { StartedAzureCosmosDbEmulatorContainer } from '@testcontainers/azure-cosmosdb-emulator';
+import {
+  AzureCosmosDbEmulatorContainer,
+  type StartedAzureCosmosDbEmulatorContainer,
+} from '@testcontainers/azure-cosmosdb-emulator';
 
 const IMAGE = 'mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview';
 

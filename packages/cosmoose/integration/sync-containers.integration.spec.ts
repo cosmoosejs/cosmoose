@@ -1,9 +1,10 @@
 import { CosmosClient } from '@azure/cosmos';
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll,beforeAll, describe, expect, it } from 'vitest';
 
 import { Cosmoose } from '~/connection/cosmoose.js';
 import { Schema } from '~/schema/schema.js';
 import { Type } from '~/types/type.js';
+
 import { cleanupDatabase, createConnectedCosmoose, uniqueDatabaseName } from './helpers.js';
 
 describe('syncContainers Integration', () => {

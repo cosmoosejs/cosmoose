@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll,beforeAll, describe, expect, it } from 'vitest';
 
 import { Cosmoose } from '~/connection/cosmoose.js';
 import { Model } from '~/model/model.js';
