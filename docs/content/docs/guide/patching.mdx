@@ -1,0 +1,114 @@
+---
+title: Patching
+description: Partial updates with $set, $incr, $unset, and $add operators
+---
+
+Patching allows you to partially update a document without replacing it entirely. This is more efficient than `updateById` because only the specified fields are modified.
+
+## Implicit $set
+
+When you pass a plain object without operators, all fields are treated as `$set` operations:
+
+```ts
+await User.patchById(id, {
+  name: 'Alice Smith',
+  age: 31,
+}, { partitionKeyValue });
+```
+
+This sets `name` to `'Alice Smith'` and `age` to `31`. Other fields remain unchanged.
+
+## Explicit Operators
+
+Use `PatchExpression<T>` for more control:
+
+```ts
+await User.patchById(id, {
+  $set: { name: 'Alice Smith' },
+  $incr: { loginCount: 1 },
+  $unset: { temporaryFlag: true },
+  $add: { tags: 'verified' },
+}, { partitionKeyValue });
+```
+
+## Operator Reference
+
+### $set
+
+Set one or more fields to new values:
+
+```ts
+await User.patchById(id, {
+  $set: {
+    name: 'Alice Smith',
+    age: 31,
+  },
+});
+```
+
+Nested objects are flattened into individual set operations:
+
+```ts
+await User.patchById(id, {
+  $set: {
+    address: { city: 'Berlin', zip: '10115' },
+  },
+});
+// Sets /address/city and /address/zip individually
+```
+
+### $incr
+
+Increment a numeric field:
+
+```ts
+await User.patchById(id, {
+  $incr: { loginCount: 1 },    // +1
+});
+
+await User.patchById(id, {
+  $incr: { balance: -50 },     // decrement by 50
+});
+```
+
+### $unset
+
+Remove a field from the document:
+
+```ts
+await User.patchById(id, {
+  $unset: { temporaryFlag: true },
+});
+```
+
+The value (`true`) is required as a marker but doesn't affect the operation.
+
+### $add
+
+Add a value to a field (typically used with arrays or to create new fields):
+
+```ts
+await User.patchById(id, {
+  $add: { tags: 'verified' },
+});
+```
+
+## Combining Operators
+
+Multiple operators can be used in a single patch:
+
+```ts
+await User.patchById(id, {
+  $set: { status: 'active' },
+  $incr: { version: 1 },
+  $unset: { pendingReview: true },
+});
+```
+
+## Large Patches
+
+Cosmos DB limits patch operations to 10 per request. Cosmoose automatically batches larger patches, splitting them into multiple requests transparently.
+
+## Timestamps
+
+When timestamps are enabled on the schema, `updatedAt` is automatically updated on every patch operation.

@@ -1,0 +1,137 @@
+---
+title: Migrations
+description: Auto-create containers, detect drift, and manage indexing
+---
+
+Cosmoose can automatically create and update Cosmos DB containers based on your schema definitions using `syncContainers()`.
+
+## Syncing All Containers
+
+```ts
+await cosmoose.connect();
+
+const User = cosmoose.model('users', userSchema);
+const Post = cosmoose.model('posts', postSchema);
+
+const report = await cosmoose.syncContainers();
+
+for (const result of report) {
+  console.log(`${result.name}: ${result.status}`);
+}
+```
+
+## Syncing a Single Container
+
+```ts
+const result = await cosmoose.syncContainer('users');
+console.log(result.status); // 'created' | 'updated' | 'drift' | 'unchanged'
+```
+
+## Sync Statuses
+
+| Status | Meaning |
+|--------|---------|
+| `created` | Container didn't exist and was created |
+| `updated` | Container existed but mutable properties were updated (TTL, indexes) |
+| `drift` | Container exists but has immutable property differences (e.g. partition key) |
+| `unchanged` | Container matches the schema exactly |
+
+## Container Configuration
+
+The sync process uses the `container` option from your schema:
+
+```ts
+const userSchema = new Schema<User>(definition, {
+  container: {
+    partitionKey: '/email',
+    uniqueKeys: [['email']],
+    compositeIndexes: [{ name: 1, createdAt: -1 }],
+    ttl: 86400,
+  },
+});
+```
+
+### What gets synced
+
+| Property | Mutable? | On mismatch |
+|----------|----------|-------------|
+| Partition key | No | Reports as `drift` |
+| Unique keys | No | Reports as `drift` |
+| Composite indexes | Yes | Updates container |
+| TTL | Yes | Updates container |
+
+## Drift Detection
+
+When a container's configuration doesn't match the schema and the difference is in an **immutable** property, `syncContainers()` reports it as drift:
+
+```ts
+const report = await cosmoose.syncContainers();
+
+for (const result of report) {
+  if (result.status === 'drift') {
+    for (const detail of result.driftDetails!) {
+      console.log(`  ${detail.property}: expected ${detail.expected}, got ${detail.actual}`);
+      console.log(`  Mutable: ${detail.mutable}`);
+      if (detail.reason) console.log(`  Reason: ${detail.reason}`);
+    }
+  }
+}
+```
+
+### DriftDetail
+
+```ts
+interface DriftDetail {
+  property: string;   // e.g. 'partitionKey'
+  expected: unknown;   // value from schema
+  actual: unknown;     // value in container
+  mutable: boolean;    // whether this can be changed
+  reason?: string;     // explanation
+}
+```
+
+## Resolving Drift
+
+Immutable drift (partition key, unique keys) cannot be fixed by `syncContainers()`. To resolve it:
+
+1. Export data from the container
+2. Delete the container
+3. Run `syncContainers()` to recreate it
+4. Re-import the data
+
+## Usage Patterns
+
+### Development: Sync on startup
+
+```ts
+await cosmoose.connect();
+// Register models...
+
+if (process.env.NODE_ENV === 'development') {
+  const report = await cosmoose.syncContainers();
+  for (const r of report) {
+    console.log(`[sync] ${r.name}: ${r.status}`);
+  }
+}
+```
+
+### CI/CD: Sync as a migration step
+
+```ts
+// migration script
+import { Cosmoose } from '@cosmoose/core';
+
+const cosmoose = new Cosmoose({ /* config */ });
+await cosmoose.connect();
+// Register all models...
+
+const report = await cosmoose.syncContainers();
+const hasDrift = report.some(r => r.status === 'drift');
+
+if (hasDrift) {
+  console.error('Drift detected! Manual intervention required.');
+  process.exit(1);
+}
+
+console.log('All containers synced successfully.');
+```

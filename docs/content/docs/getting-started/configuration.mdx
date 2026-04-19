@@ -1,0 +1,86 @@
+---
+title: Configuration
+description: CosmooseOptions and connection setup
+---
+
+## CosmooseOptions
+
+The `Cosmoose` constructor accepts a configuration object:
+
+```ts
+import { Cosmoose } from '@cosmoose/core';
+
+const cosmoose = new Cosmoose({
+  endpoint: 'https://your-account.documents.azure.com:443/',
+  key: 'your-primary-key',
+  databaseName: 'my-database',
+});
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `endpoint` | `string` | Cosmos DB account endpoint URL |
+| `key` | `string` | Primary or secondary access key |
+| `databaseName` | `string` | Database name (created if it doesn't exist) |
+
+## Connection Lifecycle
+
+```ts
+// Connect to the database
+await cosmoose.connect();
+
+// Check connection status
+cosmoose.isConnected(); // true
+
+// Access the underlying database object
+const database = cosmoose.getDatabase();
+```
+
+Calling `connect()` multiple times is safe — subsequent calls are no-ops.
+
+## Events
+
+`Cosmoose` extends `EventEmitter` and emits lifecycle events:
+
+```ts
+cosmoose.on('initiate', () => {
+  console.log('Connecting...');
+});
+
+cosmoose.on('initiated', (databaseName: string) => {
+  console.log(`Connected to ${databaseName}`);
+});
+
+await cosmoose.connect();
+```
+
+| Event | Payload | When |
+|-------|---------|------|
+| `initiate` | — | Before connection starts |
+| `initiated` | `databaseName: string` | After connection succeeds |
+
+## Environment Variables
+
+A common pattern is to load configuration from environment variables:
+
+```ts
+const cosmoose = new Cosmoose({
+  endpoint: process.env.COSMOS_ENDPOINT!,
+  key: process.env.COSMOS_KEY!,
+  databaseName: process.env.COSMOS_DATABASE!,
+});
+```
+
+## Using the Cosmos DB Emulator
+
+For local development, use the [Azure Cosmos DB Emulator](https://learn.microsoft.com/en-us/azure/cosmos-db/emulator):
+
+```ts
+const cosmoose = new Cosmoose({
+  endpoint: 'https://localhost:8081',
+  key: 'C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==',
+  databaseName: 'local-dev',
+});
+```
+
+The key shown above is the well-known emulator key.

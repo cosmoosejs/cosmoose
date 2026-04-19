@@ -1,0 +1,149 @@
+---
+title: Model
+description: CRUD operations, timestamps, and document management
+---
+
+A `Model` provides type-safe CRUD operations for a Cosmos DB container.
+
+## Registering a Model
+
+```ts
+const User = cosmoose.model('users', userSchema);
+```
+
+The first argument is the container name. The model is bound to this container and uses the schema for validation and serialization.
+
+A model can only be registered once per name. The connection must be established first:
+
+```ts
+await cosmoose.connect();
+const User = cosmoose.model('users', userSchema); // ✓
+```
+
+## Create
+
+```ts
+const user = await User.create({
+  name: 'Alice',
+  email: 'alice@example.com',
+  age: 30,
+});
+
+console.log(user.id);        // auto-generated UUID v7
+console.log(user.createdAt); // set if timestamps enabled
+```
+
+- The document is validated against the schema before insertion
+- An `id` is auto-generated if not provided (UUID v7, no hyphens)
+- Timestamps are set automatically if enabled on the schema
+- Date fields are serialized to ISO strings for storage
+
+## Get By ID
+
+```ts
+const user = await User.getById('some-id');
+// undefined if not found
+
+// With partition key for efficient point reads
+const user = await User.getById('some-id', {
+  partitionKeyValue: 'alice@example.com',
+});
+```
+
+## Update By ID
+
+Full document replacement:
+
+```ts
+const updated = await User.updateById('some-id', {
+  name: 'Alice Smith',
+  email: 'alice@example.com',
+  age: 31,
+}, { partitionKeyValue: 'alice@example.com' });
+// undefined if not found
+```
+
+`updatedAt` is set automatically if timestamps are enabled.
+
+## Patch By ID
+
+Partial updates without replacing the full document:
+
+```ts
+// Implicit $set (all fields treated as set operations)
+await User.patchById('some-id', {
+  age: 31,
+}, { partitionKeyValue: 'alice@example.com' });
+
+// Explicit operators
+await User.patchById('some-id', {
+  $set: { name: 'Alice Smith' },
+  $incr: { loginCount: 1 },
+  $unset: { temporaryFlag: true },
+}, { partitionKeyValue: 'alice@example.com' });
+```
+
+See the [Patching](/docs/guide/patching) guide for full operator reference.
+
+## Delete By ID
+
+```ts
+const deleted = await User.deleteById('some-id', {
+  partitionKeyValue: 'alice@example.com',
+});
+// true if deleted, undefined if not found
+```
+
+## Delete Many
+
+Delete all documents matching a filter:
+
+```ts
+await User.deleteMany({ role: 'inactive' });
+```
+
+## Find By IDs
+
+Retrieve multiple documents by their IDs:
+
+```ts
+const users = await User.findByIds(['id-1', 'id-2', 'id-3']);
+```
+
+## Raw Query
+
+Execute a raw Cosmos DB SQL query:
+
+```ts
+const results = await User.rawQuery({
+  query: 'SELECT * FROM root r WHERE r.age > @age',
+  parameters: [{ name: '@age', value: 25 }],
+});
+```
+
+## Partition Keys
+
+Many operations accept an optional `partitionKeyValue` for efficient point reads:
+
+```ts
+await User.getById(id, { partitionKeyValue: 'alice@example.com' });
+await User.updateById(id, data, { partitionKeyValue: 'alice@example.com' });
+await User.patchById(id, patch, { partitionKeyValue: 'alice@example.com' });
+await User.deleteById(id, { partitionKeyValue: 'alice@example.com' });
+```
+
+If omitted, Cosmos DB performs a cross-partition read (less efficient).
+
+## Document Type
+
+All returned documents include auto-added fields:
+
+```ts
+interface Document<T> {
+  id: string;           // document ID
+  // ... your fields from T
+  createdAt?: Date;     // if timestamps enabled
+  updatedAt?: Date;     // if timestamps enabled
+  _etag?: string;       // Cosmos DB metadata
+}
+```

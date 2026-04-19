@@ -1,0 +1,188 @@
+---
+title: Model
+description: API reference for the Model class
+---
+
+## Class: Model\<T\>
+
+Provides type-safe CRUD operations for a Cosmos DB container.
+
+```ts
+// Obtained from cosmoose.model()
+const User = cosmoose.model('users', userSchema);
+```
+
+---
+
+### Methods
+
+#### `create(data)`
+
+```ts
+async create(data: Partial<T>): Promise<Document<T>>
+```
+
+Creates a new document. Validates against the schema, auto-generates an ID (UUID v7) if not provided, and sets timestamps if enabled.
+
+**Throws:** `SchemaValidationFailedException` on validation failure.
+
+---
+
+#### `getById(id, options?)`
+
+```ts
+async getById(id: string, options?: { partitionKeyValue?: PartitionKey }): Promise<Document<T> | undefined>
+```
+
+Point-reads a document by ID. Returns `undefined` if not found.
+
+---
+
+#### `updateById(id, data, options?)`
+
+```ts
+async updateById(id: string, data: Partial<T>, options?: { partitionKeyValue?: PartitionKey }): Promise<Document<T> | undefined>
+```
+
+Full document replacement. Returns `undefined` if not found. Sets `updatedAt` if timestamps enabled.
+
+---
+
+#### `patchById(id, expression, options?)`
+
+```ts
+async patchById(id: string, expression: PatchExpression<T> | Partial<T>, options?: { partitionKeyValue?: PartitionKey }): Promise<Document<T> | undefined>
+```
+
+Partial update. Accepts either a `PatchExpression<T>` with operators or a plain object (treated as implicit `$set`). Returns `undefined` if not found. Auto-batches if more than 10 operations.
+
+---
+
+#### `deleteById(id, options?)`
+
+```ts
+async deleteById(id: string, options?: { partitionKeyValue?: PartitionKey }): Promise<boolean | undefined>
+```
+
+Deletes a document. Returns `true` on success, `undefined` if not found.
+
+---
+
+#### `deleteMany(filter)`
+
+```ts
+async deleteMany(filter: Record<string, unknown>): Promise<void>
+```
+
+Deletes all documents matching the filter. Uses cursor iteration internally with batch deletes of 100.
+
+---
+
+#### `createBatch(items, options?)`
+
+```ts
+async createBatch(items: Partial<T>[], options?: { retryOnError?: boolean }): Promise<BatchResult<T>>
+```
+
+Bulk creates documents. Items that fail validation are added to `failed` without blocking others. When `retryOnError` is `true`, throttled requests (429) are retried with exponential backoff.
+
+---
+
+#### `upsertBatch(items)`
+
+```ts
+async upsertBatch(items: Partial<T>[]): Promise<BatchResult<T>>
+```
+
+Bulk upserts (insert or replace) documents.
+
+---
+
+#### `find(filter?)`
+
+```ts
+find(filter?: Record<string, unknown>): QueryBuilder<T, 'find'>
+```
+
+Returns a query builder for finding documents. Default limit: 50. Chainable with `.sort()`, `.limit()`, `.offset()`.
+
+---
+
+#### `findOne(filter?)`
+
+```ts
+findOne(filter?: Record<string, unknown>): QueryBuilder<T, 'findOne'>
+```
+
+Returns a query builder that resolves to a single document or `undefined`.
+
+---
+
+#### `findAll(filter?)`
+
+```ts
+findAll(filter?: Record<string, unknown>): QueryBuilder<T, 'findAll'>
+```
+
+Returns a query builder with no limit. Use with caution on large datasets.
+
+---
+
+#### `count(filter?)`
+
+```ts
+count(filter?: Record<string, unknown>): QueryBuilder<T, 'count'>
+```
+
+Returns a query builder that resolves to the count of matching documents.
+
+---
+
+#### `findAsCursor(filter?, options?)`
+
+```ts
+findAsCursor(filter?: Record<string, unknown>, options?: { batchSize?: number }): QueryBuilder<T, 'findAsCursor'>
+```
+
+Returns a query builder that resolves to a `Cursor<T>` for batch iteration.
+
+---
+
+#### `findAsTokenPagination(filter?, options?)`
+
+```ts
+findAsTokenPagination(filter?: Record<string, unknown>, options?: { limit?: number; paginationToken?: string }): QueryBuilder<T, 'findAsTokenPagination'>
+```
+
+Returns a query builder that resolves to a `TokenPaginationResult<T>`.
+
+---
+
+#### `findByIds(ids)`
+
+```ts
+async findByIds(ids: string[]): Promise<Document<T>[]>
+```
+
+Retrieves multiple documents by their IDs.
+
+---
+
+#### `rawQuery(querySpec)`
+
+```ts
+async rawQuery(querySpec: SqlQuerySpec): Promise<Document<T>[]>
+```
+
+Executes a raw Cosmos DB SQL query.
+
+---
+
+### BatchResult\<T\>
+
+```ts
+interface BatchResult<T> {
+  succeed: Document<T>[];
+  failed: { item: unknown; error: unknown }[];
+}
+```

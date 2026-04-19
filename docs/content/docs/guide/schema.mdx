@@ -1,0 +1,162 @@
+---
+title: Schema
+description: Define document shapes with typed fields, validation, and transforms
+---
+
+A `Schema` defines the shape and validation rules for documents in a Cosmos DB container.
+
+## Defining a Schema
+
+```ts
+import { Schema, Type } from '@cosmoose/core';
+
+interface Product {
+  name: string;
+  price: number;
+  inStock: boolean;
+  tags: string[];
+}
+
+const productSchema = new Schema<Product>({
+  name: { type: Type.STRING, trim: true },
+  price: { type: Type.NUMBER },
+  inStock: { type: Type.BOOLEAN, default: true },
+  tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+});
+```
+
+## Field Types
+
+| Type | TypeScript | Description |
+|------|-----------|-------------|
+| `Type.STRING` | `string` | Text values |
+| `Type.NUMBER` | `number` | Numeric values |
+| `Type.BOOLEAN` | `boolean` | True/false |
+| `Type.DATE` | `Date` | Date values (stored as ISO strings) |
+| `Type.EMAIL` | `string` | Email with auto trim + lowercase + validation |
+| `Type.OBJECT` | `object` | Nested schema |
+| `Type.ARRAY` | `array` | Array of any field type |
+| `Type.MAP` | `Record` | Key-value map |
+| `Type.ANY` | `unknown` | Any value (no validation) |
+
+## String Transforms
+
+String fields support automatic transforms during validation:
+
+```ts
+{
+  name: { type: Type.STRING, trim: true },        // trims whitespace
+  code: { type: Type.STRING, uppercase: true },    // converts to UPPERCASE
+  slug: { type: Type.STRING, lowercase: true },    // converts to lowercase
+}
+```
+
+`Type.EMAIL` automatically applies `trim` and `lowercase`.
+
+## Optional Fields and Defaults
+
+```ts
+{
+  bio: { type: Type.STRING, optional: true },      // not required
+  role: { type: Type.STRING, default: 'member' },  // default value
+  score: { type: Type.NUMBER, default: 0 },
+}
+```
+
+Fields with `default` are also treated as optional during creation — the default is applied if the field is not provided.
+
+## Nested Objects
+
+Use `Type.OBJECT` with a nested `Schema`:
+
+```ts
+interface Address {
+  street: string;
+  city: string;
+  zip: string;
+}
+
+interface Customer {
+  name: string;
+  address: Address;
+}
+
+const addressSchema = new Schema<Address>({
+  street: { type: Type.STRING },
+  city: { type: Type.STRING },
+  zip: { type: Type.STRING },
+});
+
+const customerSchema = new Schema<Customer>({
+  name: { type: Type.STRING },
+  address: { type: Type.OBJECT, schema: addressSchema },
+});
+```
+
+## Arrays
+
+```ts
+{
+  tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+  scores: { type: Type.ARRAY, items: { type: Type.NUMBER } },
+}
+```
+
+Array items can be any field type, including nested objects.
+
+## Maps
+
+```ts
+{
+  metadata: { type: Type.MAP, of: Type.STRING },
+}
+```
+
+Maps represent key-value pairs where keys are strings and values are of the specified type.
+
+## Schema Options
+
+```ts
+const schema = new Schema<User>(definition, {
+  timestamps: true,
+  container: {
+    partitionKey: '/email',
+    uniqueKeys: [['email']],
+    compositeIndexes: [{ name: 1, createdAt: -1 }],
+    ttl: 86400, // seconds
+  },
+});
+```
+
+### Timestamps
+
+When `timestamps: true`, the model automatically adds and manages:
+- `createdAt` — set on document creation
+- `updatedAt` — updated on every write operation
+
+### Container Config
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `partitionKey` | `string \| { paths: string[]; kind?: 'Hash' \| 'MultiHash' }` | Partition key definition |
+| `uniqueKeys` | `string[][]` | Unique key constraints |
+| `compositeIndexes` | `{ [path]: 1 \| -1 }[]` | Composite index definitions |
+| `ttl` | `number` | Default time-to-live in seconds |
+
+Container config is used by `syncContainers()` to create and validate containers. See the [Migrations](/docs/guide/migrations) guide.
+
+## Validation
+
+Schemas use [Zod](https://zod.dev) internally for validation. When validation fails, a `SchemaValidationFailedException` is thrown:
+
+```ts
+import { SchemaValidationFailedException } from '@cosmoose/core';
+
+try {
+  await User.create({ name: 123 }); // wrong type
+} catch (err) {
+  if (err instanceof SchemaValidationFailedException) {
+    console.log(err.errors); // Zod validation errors
+  }
+}
+```

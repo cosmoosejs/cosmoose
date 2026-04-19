@@ -1,0 +1,77 @@
+---
+title: Batch Operations
+description: Bulk create and upsert documents efficiently
+---
+
+Cosmoose supports batch operations for inserting or upserting multiple documents in a single call, using Cosmos DB's bulk API.
+
+## Create Batch
+
+```ts
+const { succeed, failed } = await User.createBatch([
+  { name: 'Alice', email: 'alice@example.com', age: 30 },
+  { name: 'Bob', email: 'bob@example.com', age: 25 },
+  { name: 'Charlie', email: 'charlie@example.com', age: 35 },
+]);
+
+console.log(`Created: ${succeed.length}`);
+console.log(`Failed: ${failed.length}`);
+```
+
+### Validation
+
+Each item is validated against the schema before insertion. Items that fail validation are added to the `failed` array without blocking the rest:
+
+```ts
+const { succeed, failed } = await User.createBatch([
+  { name: 'Alice', email: 'alice@example.com', age: 30 },   // ✓
+  { name: 123, email: 'invalid' },                           // ✗ validation error
+]);
+
+// succeed.length === 1
+// failed.length === 1
+// failed[0].error contains the Zod validation error
+```
+
+### Retry on Throttling
+
+Enable automatic retry for rate-limited requests (HTTP 429):
+
+```ts
+const result = await User.createBatch(items, {
+  retryOnError: true,
+});
+```
+
+When enabled, throttled operations are retried with exponential backoff (up to 5 retries, max 30s delay).
+
+## Upsert Batch
+
+Insert or replace documents in bulk:
+
+```ts
+const { succeed, failed } = await User.upsertBatch([
+  { id: 'existing-id', name: 'Alice Updated', email: 'alice@example.com', age: 31 },
+  { name: 'New User', email: 'new@example.com', age: 28 },
+]);
+```
+
+If a document with the same `id` exists, it is replaced. Otherwise, a new document is created.
+
+## Result Type
+
+Both `createBatch` and `upsertBatch` return:
+
+```ts
+interface BatchResult<T> {
+  succeed: Document<T>[];           // successfully created/upserted documents
+  failed: { item: unknown; error: unknown }[]; // items that failed
+}
+```
+
+## Auto-Generated Fields
+
+Like single `create()`, batch operations automatically:
+- Generate UUID v7 IDs for items without an `id`
+- Set `createdAt` and `updatedAt` timestamps (if enabled)
+- Serialize Date fields to ISO strings

@@ -1,0 +1,194 @@
+---
+title: Types
+description: API reference for Type enum, Document, PatchExpression, and other types
+---
+
+## Enum: Type
+
+Field type identifiers used in schema definitions.
+
+```ts
+import { Type } from '@cosmoose/core';
+```
+
+| Value | Description |
+|-------|-------------|
+| `Type.STRING` | String values |
+| `Type.NUMBER` | Numeric values |
+| `Type.BOOLEAN` | Boolean values |
+| `Type.DATE` | Date values (stored as ISO strings) |
+| `Type.EMAIL` | Email with auto trim, lowercase, and validation |
+| `Type.OBJECT` | Nested object (requires `schema` property) |
+| `Type.ARRAY` | Array (requires `items` property) |
+| `Type.MAP` | Key-value map (requires `of` property) |
+| `Type.ANY` | Any value (no validation) |
+
+---
+
+## Type: Document\<T\>
+
+Represents a document returned from Cosmos DB. Extends `T` with auto-added fields.
+
+```ts
+type Document<T> = T & {
+  id: string;
+  _etag?: string;
+  _ts?: number;
+  _rid?: string;
+  _self?: string;
+  _attachments?: string;
+};
+```
+
+When timestamps are enabled on the schema, documents also include:
+- `createdAt?: Date`
+- `updatedAt?: Date`
+
+---
+
+## Interface: PatchExpression\<T\>
+
+Operators for partial document updates via `patchById()`.
+
+```ts
+interface PatchExpression<T> {
+  $set?: Partial<T>;
+  $add?: Partial<Record<keyof T, unknown>>;
+  $incr?: Partial<Record<keyof T, number>>;
+  $unset?: Partial<Record<keyof T, true>>;
+}
+```
+
+| Operator | Description |
+|----------|-------------|
+| `$set` | Set fields to new values |
+| `$add` | Add values to fields |
+| `$incr` | Increment numeric fields (use negative values to decrement) |
+| `$unset` | Remove fields from the document |
+
+---
+
+## Type: SchemaDefinition\<T\>
+
+Maps field names to their descriptors.
+
+```ts
+type SchemaDefinition<T> = {
+  [K in keyof T]: FieldDescriptor;
+};
+```
+
+---
+
+## Type: FieldDescriptor
+
+Union of all field descriptor types. See [Schema API](/docs/api/schema) for details on each variant.
+
+---
+
+## Interface: ContainerConfig
+
+Container-level configuration used by schema options and `syncContainers()`.
+
+```ts
+interface ContainerConfig {
+  partitionKey?: PartitionKeyDefinition;
+  uniqueKeys?: string[][];
+  compositeIndexes?: CompositeIndexEntry[];
+  ttl?: number;
+}
+```
+
+---
+
+## Type: PartitionKeyDefinition
+
+```ts
+type PartitionKeyDefinition =
+  | string                                    // simple: '/email'
+  | { paths: string[]; kind?: 'Hash' }        // hash
+  | { paths: string[]; kind: 'MultiHash' };   // hierarchical
+```
+
+---
+
+## Interface: CompositeIndexEntry
+
+```ts
+interface CompositeIndexEntry {
+  [path: string]: 1 | -1;  // 1 = ascending, -1 = descending
+}
+```
+
+---
+
+## Migration Types
+
+### ContainerSyncResult
+
+```ts
+interface ContainerSyncResult {
+  name: string;
+  status: ContainerSyncStatus;
+  driftDetails?: DriftDetail[];
+  updatedProperties?: string[];
+}
+```
+
+### ContainerSyncStatus
+
+```ts
+type ContainerSyncStatus = 'created' | 'updated' | 'drift' | 'unchanged';
+```
+
+### DriftDetail
+
+```ts
+interface DriftDetail {
+  property: string;
+  expected: unknown;
+  actual: unknown;
+  mutable: boolean;
+  reason?: string;
+}
+```
+
+### SyncReport
+
+```ts
+type SyncReport = ContainerSyncResult[];
+```
+
+---
+
+## Exceptions
+
+### SchemaValidationFailedException
+
+Thrown when document data fails schema validation. Contains the underlying Zod validation error.
+
+### InvalidIndexKeyException
+
+Thrown when an invalid index key is specified in the container config.
+
+### InvalidUniqueKeyException
+
+Thrown when an invalid unique key is specified in the container config.
+
+---
+
+## Utility Functions
+
+### `generateId()`
+
+```ts
+function generateId(): string
+```
+
+Generates a UUID v7 string (no hyphens). Used automatically by `Model.create()` but can be called directly:
+
+```ts
+import { generateId } from '@cosmoose/core';
+
+const id = generateId(); // e.g. '019756a0b5947d3a8e4c1f2b3d4e5f6a'
+```

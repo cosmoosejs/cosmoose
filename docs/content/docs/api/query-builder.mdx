@@ -1,0 +1,164 @@
+---
+title: QueryBuilder
+description: API reference for QueryBuilder, Cursor, and TokenPaginationResult
+---
+
+## Class: QueryBuilder\<T, Q\>
+
+A fluent, chainable query builder that generates parameterized Cosmos DB SQL queries. Implements `PromiseLike` so it can be awaited directly.
+
+```ts
+// Obtained from Model methods
+const query = User.find({ role: 'admin' });
+```
+
+The type parameter `Q` determines the return type when the query is awaited.
+
+---
+
+### Chainable Methods
+
+#### `sort(fields)`
+
+```ts
+sort(fields: Record<string, 1 | -1>): this
+```
+
+Set sort order. `1` for ascending, `-1` for descending.
+
+```ts
+User.find().sort({ name: 1, createdAt: -1 });
+```
+
+---
+
+#### `limit(value)`
+
+```ts
+limit(value: number): this
+```
+
+Set maximum number of results.
+
+---
+
+#### `offset(value)`
+
+```ts
+offset(value: number): this
+```
+
+Set the number of results to skip (for offset-based pagination).
+
+---
+
+### Execution Methods
+
+#### `exec()`
+
+```ts
+async exec(): Promise<Result>
+```
+
+Executes the query and returns the result. The return type depends on `Q`:
+
+| Q | Return Type |
+|---|-------------|
+| `'find'` | `Document<T>[]` |
+| `'findOne'` | `Document<T> \| undefined` |
+| `'findAll'` | `Document<T>[]` |
+| `'count'` | `number` |
+| `'findAsCursor'` | `Cursor<T>` |
+| `'findAsTokenPagination'` | `TokenPaginationResult<T>` |
+
+---
+
+#### `then()`
+
+```ts
+then(onfulfilled?, onrejected?): Promise<Result>
+```
+
+Implements `PromiseLike` so queries can be awaited directly:
+
+```ts
+const users = await User.find({ role: 'admin' });
+```
+
+---
+
+#### `buildQuery()`
+
+```ts
+buildQuery(): SqlQuerySpec
+```
+
+Returns the generated SQL query specification without executing it. Useful for debugging:
+
+```ts
+const spec = User.find({ age: { $gt: 18 } }).buildQuery();
+console.log(spec.query);      // SELECT * FROM root r WHERE r.age > @age_0 ...
+console.log(spec.parameters); // [{ name: '@age_0', value: 18 }]
+```
+
+---
+
+## Filter Operators
+
+Filters are passed as the first argument to query methods:
+
+| Operator | Example | SQL |
+|----------|---------|-----|
+| equality | `{ role: 'admin' }` | `r.role = @role` |
+| `$gt` | `{ age: { $gt: 18 } }` | `r.age > @age` |
+| `$gte` | `{ age: { $gte: 18 } }` | `r.age >= @age` |
+| `$lt` | `{ age: { $lt: 65 } }` | `r.age < @age` |
+| `$lte` | `{ age: { $lte: 65 } }` | `r.age <= @age` |
+| `$in` | `{ role: { $in: ['a', 'b'] } }` | `r.role IN (@r_0, @r_1)` |
+| `$or` | `{ $or: [{...}, {...}] }` | `(...) OR (...)` |
+| `$and` | `{ $and: [{...}, {...}] }` | `... AND ...` |
+
+---
+
+## Interface: Cursor\<T\>
+
+An iterator for processing large result sets in batches.
+
+```ts
+interface Cursor<T> {
+  each(fn: (doc: Document<T>, index: number) => Promise<void> | void): Promise<void>;
+}
+```
+
+### `each(fn)`
+
+Iterates over all matching documents, fetching in batches (configurable via `batchSize`). The callback receives each document and its zero-based index.
+
+```ts
+const cursor = await User.findAsCursor({}, { batchSize: 100 });
+await cursor.each(async (doc, index) => {
+  // process each document
+});
+```
+
+---
+
+## Interface: TokenPaginationResult\<T\>
+
+Result of a token-based paginated query.
+
+```ts
+interface TokenPaginationResult<T> {
+  data: Document<T>[];
+  pagination: {
+    next: string | undefined;
+  };
+}
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `data` | `Document<T>[]` | Documents for this page |
+| `pagination.next` | `string \| undefined` | Continuation token for the next page, or `undefined` if no more pages |
+
+The token is a base64url-encoded Cosmos DB continuation token.

@@ -1,0 +1,182 @@
+---
+title: Querying
+description: Filter, sort, paginate, and iterate documents with the query builder
+---
+
+The `QueryBuilder` provides a fluent, chainable API for querying Cosmos DB containers. It generates parameterized SQL queries automatically.
+
+## Basic Queries
+
+```ts
+// Find with filters (default limit: 50)
+const users = await User.find({ role: 'admin' });
+
+// Find one
+const user = await User.findOne({ email: 'alice@example.com' });
+
+// Find all (no limit)
+const all = await User.findAll({ status: 'active' });
+
+// Count
+const count = await User.count({ role: 'admin' });
+```
+
+## Filter Operators
+
+### Equality
+
+```ts
+await User.find({ role: 'admin' });
+// WHERE r.role = @role
+```
+
+### Comparison
+
+```ts
+await User.find({ age: { $gt: 18 } });   // greater than
+await User.find({ age: { $gte: 18 } });  // greater than or equal
+await User.find({ age: { $lt: 65 } });   // less than
+await User.find({ age: { $lte: 65 } });  // less than or equal
+```
+
+### In
+
+```ts
+await User.find({ role: { $in: ['admin', 'moderator'] } });
+// WHERE r.role IN (@role_0, @role_1)
+```
+
+### Combining Operators
+
+```ts
+await User.find({
+  age: { $gte: 18, $lt: 65 },
+  role: 'member',
+});
+// WHERE r.age >= @age_0 AND r.age < @age_1 AND r.role = @role
+```
+
+## Logical Operators
+
+### $or
+
+```ts
+await User.find({
+  $or: [
+    { role: 'admin' },
+    { age: { $gte: 21 } },
+  ],
+});
+// WHERE (r.role = @role) OR (r.age >= @age_0)
+```
+
+### $and
+
+```ts
+await User.find({
+  $and: [
+    { status: 'active' },
+    { role: { $in: ['admin', 'moderator'] } },
+  ],
+});
+```
+
+## Sorting
+
+```ts
+await User.find({ status: 'active' })
+  .sort({ name: 1 });    // ascending
+
+await User.find({ status: 'active' })
+  .sort({ createdAt: -1 }); // descending
+
+// Multiple sort fields
+await User.find()
+  .sort({ role: 1, name: 1 });
+```
+
+## Pagination
+
+### Offset / Limit
+
+```ts
+// First page
+const page1 = await User.find()
+  .sort({ name: 1 })
+  .limit(20)
+  .offset(0);
+
+// Second page
+const page2 = await User.find()
+  .sort({ name: 1 })
+  .limit(20)
+  .offset(20);
+```
+
+### Token Pagination
+
+For large datasets, continuation token pagination is more efficient:
+
+```ts
+// First page
+const result = await User.findAsTokenPagination(
+  { status: 'active' },
+  { limit: 20 },
+);
+
+console.log(result.data);            // Document[]
+console.log(result.pagination.next); // continuation token or undefined
+
+// Next page
+const page2 = await User.findAsTokenPagination(
+  { status: 'active' },
+  { limit: 20, paginationToken: result.pagination.next },
+);
+```
+
+## Cursor Iteration
+
+For processing large result sets without loading everything into memory:
+
+```ts
+const cursor = await User.findAsCursor(
+  { status: 'active' },
+  { batchSize: 100 },
+);
+
+await cursor.each(async (doc, index) => {
+  console.log(`Processing ${index}: ${doc.name}`);
+});
+```
+
+The cursor fetches documents in batches (default: 100) and yields them one at a time.
+
+## Query Methods Summary
+
+| Method | Return Type | Description |
+|--------|------------|-------------|
+| `find(filter)` | `Document<T>[]` | Find with limit/offset (default limit: 50) |
+| `findOne(filter)` | `Document<T> \| undefined` | Find first match |
+| `findAll(filter)` | `Document<T>[]` | Find all (no limit) |
+| `count(filter)` | `number` | Count matching documents |
+| `findAsCursor(filter, opts)` | `Cursor<T>` | Batch iteration |
+| `findAsTokenPagination(filter, opts)` | `TokenPaginationResult<T>` | Continuation token pagination |
+| `findByIds(ids)` | `Document<T>[]` | Get multiple by ID |
+
+## Thenable Queries
+
+Query builders implement `PromiseLike`, so they can be used with `await` directly:
+
+```ts
+// These are equivalent
+const users = await User.find({ role: 'admin' });
+const users = await User.find({ role: 'admin' }).exec();
+```
+
+You can also chain `.sort()`, `.limit()`, and `.offset()` before awaiting:
+
+```ts
+const users = await User.find({ role: 'admin' })
+  .sort({ name: 1 })
+  .limit(10);
+```
