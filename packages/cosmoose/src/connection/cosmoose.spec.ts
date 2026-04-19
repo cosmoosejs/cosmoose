@@ -94,4 +94,92 @@ describe('Cosmoose', () => {
       expect(db.container).toHaveBeenCalledWith('users');
     });
   });
+
+  describe('getDatabase()', () => {
+    it('should return undefined before connect', () => {
+      const cosmoose = new Cosmoose(options);
+      expect(cosmoose.getDatabase()).toBeUndefined();
+    });
+
+    it('should return database after connect', async () => {
+      const cosmoose = new Cosmoose(options);
+      await cosmoose.connect();
+      expect(cosmoose.getDatabase()).toBeDefined();
+    });
+  });
+
+  describe('getRegisteredModels()', () => {
+    it('should return empty map initially', async () => {
+      const cosmoose = new Cosmoose(options);
+      await cosmoose.connect();
+      expect(cosmoose.getRegisteredModels().size).toBe(0);
+    });
+
+    it('should return registered models', async () => {
+      const cosmoose = new Cosmoose(options);
+      await cosmoose.connect();
+
+      const schema = new Schema({ name: { type: Type.STRING as const } });
+      cosmoose.model('users', schema);
+
+      expect(cosmoose.getRegisteredModels().size).toBe(1);
+      expect(cosmoose.getRegisteredModels().has('users')).toBe(true);
+    });
+  });
+
+  describe('syncContainers()', () => {
+    it('should throw when not connected', async () => {
+      const cosmoose = new Cosmoose(options);
+      await expect(cosmoose.syncContainers()).rejects.toThrow('Database is not connected');
+    });
+
+    it('should call syncContainers when connected', async () => {
+      const cosmoose = new Cosmoose(options);
+      await cosmoose.connect();
+
+      // Add containers.createIfNotExists to the mock database so sync can work
+      const db = cosmoose.getDatabase() as Record<string, unknown>;
+      (db as Record<string, unknown>)['containers'] = {
+        createIfNotExists: vi.fn().mockResolvedValue({
+          container: {
+            read: vi.fn().mockResolvedValue({ resource: null }),
+          },
+        }),
+      };
+
+      const schema = new Schema({ name: { type: Type.STRING as const } });
+      cosmoose.model('users', schema);
+
+      const report = await cosmoose.syncContainers();
+      expect(report).toHaveLength(1);
+      expect(report[0].name).toBe('users');
+    });
+  });
+
+  describe('syncContainer()', () => {
+    it('should throw when not connected', async () => {
+      const cosmoose = new Cosmoose(options);
+      await expect(cosmoose.syncContainer('users')).rejects.toThrow('Database is not connected');
+    });
+
+    it('should call syncContainer for a specific model', async () => {
+      const cosmoose = new Cosmoose(options);
+      await cosmoose.connect();
+
+      const db = cosmoose.getDatabase() as Record<string, unknown>;
+      (db as Record<string, unknown>)['containers'] = {
+        createIfNotExists: vi.fn().mockResolvedValue({
+          container: {
+            read: vi.fn().mockResolvedValue({ resource: null }),
+          },
+        }),
+      };
+
+      const schema = new Schema({ name: { type: Type.STRING as const } });
+      cosmoose.model('users', schema);
+
+      const result = await cosmoose.syncContainer('users');
+      expect(result.name).toBe('users');
+    });
+  });
 });

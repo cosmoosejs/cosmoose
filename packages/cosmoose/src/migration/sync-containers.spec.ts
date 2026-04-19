@@ -224,3 +224,285 @@ describe('syncContainer', () => {
     ).rejects.toThrow('not registered');
   });
 });
+
+describe('syncContainers edge cases', () => {
+  it('should return created when existing resource is null', async () => {
+    const mockDatabase = {
+      containers: {
+        createIfNotExists: vi.fn().mockResolvedValue({
+          container: {
+            read: vi.fn().mockResolvedValue({ resource: null }),
+            replace: vi.fn(),
+          },
+        }),
+      },
+    };
+    const schema = new Schema(
+      { name: { type: Type.STRING as const } },
+      { container: { partitionKey: '/id' } },
+    );
+    const models = new Map([ [ 'items', { schema } ] ]);
+
+    const report = await syncContainers(mockDatabase as never, models as never);
+    expect(report[0].status).toBe('created');
+  });
+
+  it('should report drift when TTL update fails', async () => {
+    const mockDatabase = {
+      containers: {
+        createIfNotExists: vi.fn().mockResolvedValue({
+          container: {
+            read: vi.fn().mockResolvedValue({
+              resource: {
+                id: 'sessions',
+                partitionKey: { paths: [ '/sessionId' ] },
+                defaultTtl: 1800,
+              },
+            }),
+            replace: vi.fn().mockRejectedValue(new Error('replace failed')),
+          },
+        }),
+      },
+    };
+    const schema = new Schema(
+      { name: { type: Type.STRING as const } },
+      { container: { partitionKey: '/sessionId', ttl: 3600 } },
+    );
+    const models = new Map([ [ 'sessions', { schema } ] ]);
+
+    const report = await syncContainers(mockDatabase as never, models as never);
+    expect(report[0].status).toBe('drift');
+    expect(report[0].driftDetails).toContainEqual(
+      expect.objectContaining({
+        property: 'ttl',
+        mutable: true,
+      }),
+    );
+  });
+
+  it('should report drift when composite index update fails', async () => {
+    const mockDatabase = {
+      containers: {
+        createIfNotExists: vi.fn().mockResolvedValue({
+          container: {
+            read: vi.fn().mockResolvedValue({
+              resource: {
+                id: 'items',
+                partitionKey: { paths: [ '/id' ] },
+                indexingPolicy: {
+                  compositeIndexes: [
+                    [ { path: '/old', order: 'ascending' } ],
+                  ],
+                },
+              },
+            }),
+            replace: vi.fn().mockRejectedValue(new Error('replace failed')),
+          },
+        }),
+      },
+    };
+    const schema = new Schema(
+      { name: { type: Type.STRING as const } },
+      { container: { compositeIndexes: [ { '/createdAt': 1, '/status': -1 } ] } },
+    );
+    const models = new Map([ [ 'items', { schema } ] ]);
+
+    const report = await syncContainers(mockDatabase as never, models as never);
+    expect(report[0].status).toBe('drift');
+    expect(report[0].driftDetails).toContainEqual(
+      expect.objectContaining({
+        property: 'compositeIndexes',
+        mutable: true,
+      }),
+    );
+  });
+
+  it('should auto-apply mutable drift on composite indexes', async () => {
+    const { mockDatabase } = createMockDatabase({
+      items: {
+        id: 'items',
+        partitionKey: { paths: [ '/id' ] },
+        indexingPolicy: {
+          compositeIndexes: [
+            [ { path: '/old', order: 'ascending' } ],
+          ],
+        },
+      },
+    });
+    const schema = new Schema(
+      { name: { type: Type.STRING as const } },
+      { container: { compositeIndexes: [ { '/createdAt': 1, '/status': -1 } ] } },
+    );
+    const models = new Map([ [ 'items', { schema } ] ]);
+
+    const report = await syncContainers(mockDatabase as never, models as never);
+    expect(report[0].status).toBe('updated');
+    expect(report[0].updatedProperties).toContain('compositeIndexes');
+  });
+
+  it('should sync container without partition key', async () => {
+    const { mockDatabase } = createMockDatabase();
+    const schema = new Schema(
+      { name: { type: Type.STRING as const } },
+      { container: {} },
+    );
+    const models = new Map([ [ 'items', { schema } ] ]);
+
+    const report = await syncContainers(mockDatabase as never, models as never);
+    expect(report[0].name).toBe('items');
+  });
+
+  it('should report unchanged when partition key, unique keys, TTL, and composites all match', async () => {
+    const { mockDatabase } = createMockDatabase({
+      users: {
+        id: 'users',
+        partitionKey: { paths: [ '/networkId' ] },
+        uniqueKeyPolicy: { uniqueKeys: [ { paths: [ '/email' ] } ] },
+        defaultTtl: 3600,
+        indexingPolicy: {
+          compositeIndexes: [
+            [
+              { path: '/createdAt', order: 'ascending' },
+              { path: '/status', order: 'descending' },
+            ],
+          ],
+        },
+      },
+    });
+    const schema = new Schema(
+      { name: { type: Type.STRING as const } },
+      {
+        container: {
+          partitionKey: '/networkId',
+          uniqueKeys: [ [ '/email' ] ],
+          ttl: 3600,
+          compositeIndexes: [ { '/createdAt': 1, '/status': -1 } ],
+        },
+      },
+    );
+    const models = new Map([ [ 'users', { schema } ] ]);
+
+    const report = await syncContainers(mockDatabase as never, models as never);
+    expect(report[0].status).toBe('unchanged');
+  });
+
+  it('should detect drift when existing container has no partitionKey property', async () => {
+    const { mockDatabase } = createMockDatabase({
+      users: { id: 'users' },
+    });
+    const schema = new Schema(
+      { name: { type: Type.STRING as const } },
+      { container: { partitionKey: '/networkId' } },
+    );
+    const models = new Map([ [ 'users', { schema } ] ]);
+
+    const report = await syncContainers(mockDatabase as never, models as never);
+    expect(report[0].status).toBe('drift');
+    expect(report[0].driftDetails).toContainEqual(
+      expect.objectContaining({ property: 'partitionKey', mutable: false }),
+    );
+  });
+
+  it('should detect drift when existing container has no uniqueKeyPolicy property', async () => {
+    const { mockDatabase } = createMockDatabase({
+      users: { id: 'users', partitionKey: { paths: [ '/networkId' ] } },
+    });
+    const schema = new Schema(
+      { name: { type: Type.STRING as const } },
+      { container: { partitionKey: '/networkId', uniqueKeys: [ [ '/email' ] ] } },
+    );
+    const models = new Map([ [ 'users', { schema } ] ]);
+
+    const report = await syncContainers(mockDatabase as never, models as never);
+    expect(report[0].status).toBe('drift');
+    expect(report[0].driftDetails).toContainEqual(
+      expect.objectContaining({ property: 'uniqueKeyPolicy', mutable: false }),
+    );
+  });
+
+  it('should update composites when existing container has no indexingPolicy', async () => {
+    const { mockDatabase } = createMockDatabase({
+      items: { id: 'items', partitionKey: { paths: [ '/id' ] } },
+    });
+    const schema = new Schema(
+      { name: { type: Type.STRING as const } },
+      { container: { partitionKey: '/id', compositeIndexes: [ { '/createdAt': 1, '/status': -1 } ] } },
+    );
+    const models = new Map([ [ 'items', { schema } ] ]);
+
+    const report = await syncContainers(mockDatabase as never, models as never);
+    expect(report[0].status).toBe('updated');
+    expect(report[0].updatedProperties).toContain('compositeIndexes');
+  });
+
+  it('should handle object partition key with Hash kind', async () => {
+    const { mockDatabase } = createMockDatabase({
+      users: {
+        id: 'users',
+        partitionKey: { paths: [ '/tenantId' ] },
+      },
+    });
+    const schema = new Schema(
+      { name: { type: Type.STRING as const } },
+      { container: { partitionKey: { paths: [ '/tenantId' ], kind: 'Hash' } } },
+    );
+    const models = new Map([ [ 'users', { schema } ] ]);
+
+    const report = await syncContainers(mockDatabase as never, models as never);
+
+    const callArg = mockDatabase.containers.createIfNotExists.mock.calls[0][0];
+    expect(callArg.partitionKey.kind).toBe(PartitionKeyKind.Hash);
+    expect(report[0].status).toBe('unchanged');
+  });
+
+  it('should report updated with drift details when TTL update succeeds but composites fail', async () => {
+    const replaceCallCount = { count: 0 };
+    const mockDatabase = {
+      containers: {
+        createIfNotExists: vi.fn().mockResolvedValue({
+          container: {
+            read: vi.fn().mockResolvedValue({
+              resource: {
+                id: 'items',
+                partitionKey: { paths: [ '/id' ] },
+                defaultTtl: 1800,
+                indexingPolicy: {
+                  compositeIndexes: [
+                    [ { path: '/old', order: 'ascending' } ],
+                  ],
+                },
+              },
+            }),
+            replace: vi.fn().mockImplementation(async () => {
+              replaceCallCount.count++;
+              if (replaceCallCount.count === 1) {
+                // TTL update succeeds
+                return { resource: {} };
+              }
+              // Composites update fails
+              throw new Error('replace failed');
+            }),
+          },
+        }),
+      },
+    };
+    const schema = new Schema(
+      { name: { type: Type.STRING as const } },
+      {
+        container: {
+          partitionKey: '/id',
+          ttl: 3600,
+          compositeIndexes: [ { '/createdAt': 1, '/status': -1 } ],
+        },
+      },
+    );
+    const models = new Map([ [ 'items', { schema } ] ]);
+
+    const report = await syncContainers(mockDatabase as never, models as never);
+    expect(report[0].status).toBe('updated');
+    expect(report[0].updatedProperties).toContain('ttl');
+    expect(report[0].driftDetails).toContainEqual(
+      expect.objectContaining({ property: 'compositeIndexes', mutable: true }),
+    );
+  });
+});

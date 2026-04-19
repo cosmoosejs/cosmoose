@@ -19,6 +19,7 @@ export class Schema<T extends Record<string, unknown>> {
   private cachedCreateSchema: ZodTypeAny | undefined;
   private cachedPatchSchema: ZodTypeAny | undefined;
   private cachedDeserializeSchema: ZodTypeAny | undefined;
+  private cachedNestedDeserializeSchema: ZodTypeAny | undefined;
 
   constructor (definition: SchemaDefinition<T>, options: SchemaOptions = {}) {
     this.definition = definition;
@@ -41,6 +42,7 @@ export class Schema<T extends Record<string, unknown>> {
     if (!this.cachedCreateSchema) {
       this.cachedCreateSchema = this.buildCreateSchema();
     }
+
     return this.cachedCreateSchema;
   }
 
@@ -48,6 +50,7 @@ export class Schema<T extends Record<string, unknown>> {
     if (!this.cachedPatchSchema) {
       this.cachedPatchSchema = this.buildPatchSchema();
     }
+
     return this.cachedPatchSchema;
   }
 
@@ -55,6 +58,7 @@ export class Schema<T extends Record<string, unknown>> {
     if (!this.cachedDeserializeSchema) {
       this.cachedDeserializeSchema = this.buildDeserializeSchema();
     }
+
     return this.cachedDeserializeSchema;
   }
 
@@ -100,11 +104,11 @@ export class Schema<T extends Record<string, unknown>> {
   private buildDeserializeSchema (): ZodTypeAny {
     const shape: Record<string, ZodTypeAny> = {};
     shape['id'] = z.string();
-    shape['_etag'] = z.string();
-    shape['_ts'] = z.number();
-    shape['_rid'] = z.string();
-    shape['_self'] = z.string();
-    shape['_attachments'] = z.string();
+    shape['_etag'] = z.string().optional();
+    shape['_ts'] = z.number().optional();
+    shape['_rid'] = z.string().optional();
+    shape['_self'] = z.string().optional();
+    shape['_attachments'] = z.string().optional();
 
     for (const [ key, descriptor ] of Object.entries(this.definition) as [string, FieldDescriptor][]) {
       let fieldSchema = this.compileFieldToZodForDeserialize(descriptor);
@@ -125,40 +129,81 @@ export class Schema<T extends Record<string, unknown>> {
     return z.object(shape);
   }
 
+  private buildNestedDeserializeSchema (): ZodTypeAny {
+    const shape: Record<string, ZodTypeAny> = {};
+
+    for (const [ key, descriptor ] of Object.entries(this.definition) as [string, FieldDescriptor][]) {
+      let fieldSchema = this.compileFieldToZodForDeserialize(descriptor);
+      fieldSchema = fieldSchema.nullable();
+
+      if (descriptor.optional || descriptor.default !== undefined) {
+        fieldSchema = fieldSchema.optional();
+      }
+
+      shape[key] = fieldSchema;
+    }
+
+    return z.object(shape);
+  }
+
+  getNestedDeserializeSchema (): ZodTypeAny {
+    if (!this.cachedNestedDeserializeSchema) {
+      this.cachedNestedDeserializeSchema = this.buildNestedDeserializeSchema();
+    }
+    return this.cachedNestedDeserializeSchema;
+  }
+
   private compileFieldToZod (descriptor: FieldDescriptor): ZodTypeAny {
     switch (descriptor.type) {
       case Type.STRING: {
         let s = z.string();
+
         if (descriptor.trim) {
           s = s.trim();
         }
+
         if (descriptor.lowercase) {
           return s.transform((v) => v.toLowerCase());
         }
+
         if (descriptor.uppercase) {
           return s.transform((v) => v.toUpperCase());
         }
+
         return s;
       }
-      case Type.NUMBER:
+
+      case Type.NUMBER: {
         return z.number();
-      case Type.BOOLEAN:
+      }
+
+      case Type.BOOLEAN: {
         return z.boolean();
-      case Type.DATE:
+      }
+
+      case Type.DATE: {
         return z.date();
+      }
+
       case Type.EMAIL: {
         return z.string().trim().toLowerCase().email();
       }
-      case Type.ANY:
-        return z.any();
-      case Type.OBJECT:
+
+      case Type.OBJECT: {
         return descriptor.schema.getCreateSchema();
-      case Type.ARRAY:
+      }
+
+      case Type.ARRAY: {
         return z.array(this.compileFieldToZod(descriptor.items));
-      case Type.MAP:
+      }
+
+      case Type.MAP: {
         return z.record(z.string(), this.compileFieldToZodPrimitive(descriptor.of));
-      default:
+      }
+
+      case Type.ANY: {
         return z.any();
+      }
     }
   }
 
@@ -174,15 +219,13 @@ export class Schema<T extends Record<string, unknown>> {
         return z.string().transform((v) => new Date(v));
       case Type.EMAIL:
         return z.string();
-      case Type.ANY:
-        return z.any();
       case Type.OBJECT:
-        return descriptor.schema.getDeserializeSchema();
+        return descriptor.schema.getNestedDeserializeSchema();
       case Type.ARRAY:
         return z.array(this.compileFieldToZodForDeserialize(descriptor.items));
       case Type.MAP:
         return z.record(z.string(), this.compileFieldToZodPrimitive(descriptor.of));
-      default:
+      case Type.ANY:
         return z.any();
     }
   }
@@ -200,8 +243,6 @@ export class Schema<T extends Record<string, unknown>> {
       case Type.EMAIL:
         return z.string().email();
       case Type.ANY:
-        return z.any();
-      default:
         return z.any();
     }
   }

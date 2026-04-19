@@ -291,10 +291,15 @@ export class Model<T extends Record<string, unknown>> {
 
   async deleteMany (filter: QueryFilter): Promise<void> {
     const cursor = this.findAsCursor(filter, { batchSize: 100 });
-    const idsToDelete: { id: string; partitionKey?: unknown }[] = [];
+    const partitionKeyPaths = this.getPartitionKeyPaths();
+    const idsToDelete: { id: string; partitionKey: unknown[] }[] = [];
 
     await (await cursor).each((doc) => {
-      idsToDelete.push({ id: (doc as Record<string, unknown>)['id'] as string });
+      const record = doc as Record<string, unknown>;
+      idsToDelete.push({
+        id: record['id'] as string,
+        partitionKey: partitionKeyPaths.map((path) => record[path]),
+      });
     });
 
     for (let i = 0; i < idsToDelete.length; i += 100) {
@@ -302,9 +307,24 @@ export class Model<T extends Record<string, unknown>> {
       const bulkOps = batch.map((item) => ({
         operationType: BulkOperationType.Delete,
         id: item.id,
+        partitionKey: item.partitionKey.length === 1 ? item.partitionKey[0] : item.partitionKey,
       }));
       await this.container.items.bulk(bulkOps);
     }
+  }
+
+  private getPartitionKeyPaths (): string[] {
+    const pk = this.schema.getContainerConfig().partitionKey;
+
+    if (!pk) {
+      return [];
+    }
+
+    if (typeof pk === 'string') {
+      return [ pk.replace(/^\//, '') ];
+    }
+
+    return pk.paths.map((p) => p.replace(/^\//, ''));
   }
 
   find (filter: QueryFilter = {}): QueryBuilder<T, 'find'> {

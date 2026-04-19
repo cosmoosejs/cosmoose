@@ -31,6 +31,12 @@
         "config": "packages/cosmoose/vite.config.ts"
       }
     },
+    "test:integration": {
+      "executor": "@nx/vitest:test",
+      "options": {
+        "config": "packages/cosmoose/integration/vitest.config.ts"
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint",
       "options": {

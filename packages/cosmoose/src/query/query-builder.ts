@@ -103,9 +103,7 @@ export class QueryBuilder<T extends Record<string, unknown>, Q extends QueryType
     }
 
     if (this.queryType !== 'count' && this.queryType !== 'findAll' && this.queryType !== 'findAsCursor' && this.queryType !== 'findAsTokenPagination') {
-      const offset = this.offsetValue ?? 0;
-      const limit = this.limitValue ?? 50;
-      sql += ` OFFSET ${offset} LIMIT ${limit}`;
+      sql += ` OFFSET ${this.offsetValue} LIMIT ${this.limitValue}`;
     }
 
     return {
@@ -131,7 +129,7 @@ export class QueryBuilder<T extends Record<string, unknown>, Q extends QueryType
 
     if (this.queryType === 'findAsTokenPagination') {
       const feedOptions: FeedOptions = {
-        maxItemCount: this.limitValue ?? 50,
+        maxItemCount: this.limitValue,
         continuation: this.paginationToken
           ? Buffer.from(this.paginationToken, 'base64url').toString('utf-8')
           : undefined,
