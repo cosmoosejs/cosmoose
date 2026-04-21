@@ -1,6 +1,5 @@
 import Link from 'next/link';
-
-const installCommand = 'npm install @cosmoose/core';
+import { InstallTabs } from '@/components/install-tabs';
 
 const quickStart = `import { Cosmoose, Schema, Type } from '@cosmoose/core';
 
@@ -121,7 +120,7 @@ export default function HomePage() {
 
       {/* Install + Quick Start */}
       <div className="w-full max-w-2xl flex flex-col gap-4 mb-20">
-        <CodeBlock label="Install" code={installCommand} />
+        <InstallTabs />
         <CodeBlock label="Quick start" code={quickStart} />
       </div>
 

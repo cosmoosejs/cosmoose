@@ -1,0 +1,207 @@
+---
+title: Quick Start
+description: Install cosmoose, connect to Cosmos DB, and perform CRUD operations in minutes
+icon: Rocket
+---
+
+## Prerequisites
+
+- Node.js 18 or later
+- An Azure Cosmos DB account (or the [Cosmos DB Emulator](https://learn.microsoft.com/en-us/azure/cosmos-db/emulator))
+
+## Install
+
+<Tabs items={["pnpm", "yarn", "npm"]}>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @cosmoose/core
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @cosmoose/core
+    ```
+  </Tab>
+  <Tab value="npm">
+    ```bash
+    npm install @cosmoose/core
+    ```
+  </Tab>
+</Tabs>
+
+The package has the following peer dependencies that are installed automatically:
+
+- `@azure/cosmos` — Azure Cosmos DB SDK
+- `zod` — Schema validation
+- `uuid` — ID generation
+
+<Callout type="info">
+  Cosmoose is written in TypeScript and ships type definitions out of the box. No additional `@types` packages are needed.
+</Callout>
+
+## Usage
+
+This guide walks you through the core workflow: connect, define a schema, register a model, sync containers, and perform CRUD operations.
+
+<Steps>
+<Step>
+
+### Connect to Cosmos DB
+
+```ts title="index.ts"
+import { Cosmoose } from '@cosmoose/core';
+
+const cosmoose = new Cosmoose({
+  endpoint: process.env.COSMOS_ENDPOINT!,
+  key: process.env.COSMOS_KEY!,
+  databaseName: 'my-app',
+});
+
+await cosmoose.connect();
+```
+
+<Callout type="info">
+  The database is created automatically if it doesn't exist.
+</Callout>
+
+</Step>
+<Step>
+
+### Define a Schema
+
+```ts title="schema.ts"
+import { Schema, Type } from '@cosmoose/core';
+
+interface User {
+  name: string;
+  email: string;
+  age: number;
+  role: string;
+}
+
+const userSchema = new Schema<User>(
+  {
+    name: { type: Type.STRING, trim: true },
+    email: { type: Type.EMAIL },
+    age: { type: Type.NUMBER },
+    role: { type: Type.STRING, default: 'member' },
+  },
+  {
+    timestamps: true,
+    container: {
+      partitionKey: '/email',
+    },
+  },
+);
+```
+
+Schemas validate data before it reaches Cosmos DB. The `timestamps` option automatically manages `createdAt` and `updatedAt` fields.
+
+</Step>
+<Step>
+
+### Register a Model
+
+```ts title="index.ts"
+const User = cosmoose.model('users', userSchema);
+```
+
+The first argument is the container name in Cosmos DB. The model provides type-safe CRUD operations for that container.
+
+</Step>
+<Step>
+
+### Sync Containers
+
+Before inserting data, ensure the container exists with the correct configuration:
+
+```ts title="index.ts"
+const report = await cosmoose.syncContainers();
+
+for (const result of report) {
+  console.log(`${result.name}: ${result.status}`);
+  // "users: created" on first run
+  // "users: unchanged" on subsequent runs
+}
+```
+
+<Callout type="info">
+  `syncContainers()` creates missing containers and detects drift between your schema and the actual container configuration.
+</Callout>
+
+</Step>
+<Step>
+
+### Create and Query Documents
+
+```ts title="index.ts"
+// Create a document
+const user = await User.create({
+  name: 'Alice',
+  email: 'alice@example.com',
+  age: 30,
+});
+
+console.log(user.id); // auto-generated UUID v7
+console.log(user.createdAt); // auto-set timestamp
+```
+
+```ts title="index.ts"
+// Get by ID
+const found = await User.getById(user.id, {
+  partitionKeyValue: user.email,
+});
+
+// Query with filters
+const results = await User.find({ age: { $gte: 18 } })
+  .sort({ name: 1 })
+  .limit(10);
+
+// Count
+const count = await User.count({ role: 'member' });
+```
+
+</Step>
+<Step>
+
+### Update and Patch
+
+```ts title="index.ts"
+// Full replacement
+await User.updateById(user.id, {
+  ...user,
+  age: 31,
+}, { partitionKeyValue: user.email });
+```
+
+```ts title="index.ts"
+// Partial patch (only updates specified fields)
+await User.patchById(user.id, {
+  $set: { age: 31 },
+  $incr: { loginCount: 1 },
+}, { partitionKeyValue: user.email });
+```
+
+<Callout type="idea">
+  Patches are more efficient than full replacements — they only update the fields you specify.
+</Callout>
+
+</Step>
+</Steps>
+
+## Next Steps
+
+<Cards>
+  <Card href="/docs/guide/schema" title="Schema Guide">
+    Field types, validation, and transforms
+  </Card>
+  <Card href="/docs/guide/model" title="Model Guide">
+    Full CRUD API, timestamps, and batch operations
+  </Card>
+  <Card href="/docs/guide/querying" title="Query Guide">
+    Filters, operators, sorting, and pagination
+  </Card>
+  <Card href="/docs/guide/migrations" title="Migrations">
+    Container sync and drift detection
+  </Card>
+</Cards>

@@ -7,13 +7,13 @@ description: API reference for the Schema class and SchemaOptions
 
 Defines the shape, validation rules, and container configuration for documents.
 
-```ts
+```ts title="index.ts"
 import { Schema, Type } from '@cosmoose/core';
 ```
 
 ### Constructor
 
-```ts
+```ts title="Signature"
 new Schema<T>(definition: SchemaDefinition<T>, options?: SchemaOptions)
 ```
 
@@ -21,7 +21,7 @@ new Schema<T>(definition: SchemaDefinition<T>, options?: SchemaOptions)
 
 A record mapping each field name in `T` to a `FieldDescriptor`:
 
-```ts
+```ts title="types.ts"
 type SchemaDefinition<T> = {
   [K in keyof T]: FieldDescriptor;
 };
@@ -40,7 +40,7 @@ type SchemaDefinition<T> = {
 
 #### `getDefinition()`
 
-```ts
+```ts title="Signature"
 getDefinition(): SchemaDefinition<T>
 ```
 
@@ -50,7 +50,7 @@ Returns the field definitions.
 
 #### `getOptions()`
 
-```ts
+```ts title="Signature"
 getOptions(): SchemaOptions
 ```
 
@@ -60,7 +60,7 @@ Returns the schema options.
 
 #### `getContainerConfig()`
 
-```ts
+```ts title="Signature"
 getContainerConfig(): ContainerConfig
 ```
 
@@ -80,57 +80,59 @@ A union type describing a single field. All descriptors share:
 
 ### StringFieldDescriptor
 
-```ts
+```ts title="types.ts"
 { type: Type.STRING, trim?: boolean, lowercase?: boolean, uppercase?: boolean }
 ```
 
 ### NumberFieldDescriptor
 
-```ts
+```ts title="types.ts"
 { type: Type.NUMBER }
 ```
 
 ### BooleanFieldDescriptor
 
-```ts
+```ts title="types.ts"
 { type: Type.BOOLEAN }
 ```
 
 ### DateFieldDescriptor
 
-```ts
+```ts title="types.ts"
 { type: Type.DATE }
 ```
 
 ### EmailFieldDescriptor
 
-```ts
+```ts title="types.ts"
 { type: Type.EMAIL }
 ```
 
-Auto-applies `trim` and `lowercase`. Validates email format.
+<Callout type="info">
+  Auto-applies `trim` and `lowercase`. Validates email format.
+</Callout>
 
 ### ObjectFieldDescriptor
 
-```ts
+```ts title="types.ts"
 { type: Type.OBJECT, schema: Schema<Record<string, unknown>> }
 ```
 
 ### ArrayFieldDescriptor
 
-```ts
+```ts title="types.ts"
 { type: Type.ARRAY, items: FieldDescriptor }
 ```
 
 ### MapFieldDescriptor
 
-```ts
+```ts title="types.ts"
 { type: Type.MAP, of: Type }
 ```
 
 ### AnyFieldDescriptor
 
-```ts
+```ts title="types.ts"
 { type: Type.ANY }
 ```
 
@@ -140,7 +142,7 @@ Auto-applies `trim` and `lowercase`. Validates email format.
 
 Configuration for the Cosmos DB container, used by `syncContainers()`.
 
-```ts
+```ts title="types.ts"
 interface ContainerConfig {
   partitionKey?: PartitionKeyDefinition;
   uniqueKeys?: string[][];
@@ -158,7 +160,7 @@ interface ContainerConfig {
 
 ### PartitionKeyDefinition
 
-```ts
+```ts title="types.ts"
 // Simple string shorthand
 partitionKey: '/email'
 
@@ -171,7 +173,7 @@ partitionKey: { paths: ['/tenantId', '/userId'], kind: 'MultiHash' }
 
 ### CompositeIndexEntry
 
-```ts
+```ts title="types.ts"
 // Ascending name, descending createdAt
 compositeIndexes: [{ name: 1, createdAt: -1 }]
 ```

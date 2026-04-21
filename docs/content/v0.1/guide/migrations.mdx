@@ -1,5 +1,5 @@
 ---
-title: Migrations
+title: Container Sync
 description: Auto-create containers, detect drift, and manage indexing
 ---
 
@@ -7,7 +7,7 @@ Cosmoose can automatically create and update Cosmos DB containers based on your 
 
 ## Syncing All Containers
 
-```ts
+```ts title="index.ts"
 await cosmoose.connect();
 
 const User = cosmoose.model('users', userSchema);
@@ -22,7 +22,7 @@ for (const result of report) {
 
 ## Syncing a Single Container
 
-```ts
+```ts title="index.ts"
 const result = await cosmoose.syncContainer('users');
 console.log(result.status); // 'created' | 'updated' | 'drift' | 'unchanged'
 ```
@@ -40,7 +40,7 @@ console.log(result.status); // 'created' | 'updated' | 'drift' | 'unchanged'
 
 The sync process uses the `container` option from your schema:
 
-```ts
+```ts title="schema.ts"
 const userSchema = new Schema<User>(definition, {
   container: {
     partitionKey: '/email',
@@ -64,7 +64,7 @@ const userSchema = new Schema<User>(definition, {
 
 When a container's configuration doesn't match the schema and the difference is in an **immutable** property, `syncContainers()` reports it as drift:
 
-```ts
+```ts title="index.ts"
 const report = await cosmoose.syncContainers();
 
 for (const result of report) {
@@ -80,7 +80,7 @@ for (const result of report) {
 
 ### DriftDetail
 
-```ts
+```ts title="types.ts"
 interface DriftDetail {
   property: string;   // e.g. 'partitionKey'
   expected: unknown;   // value from schema
@@ -92,18 +92,15 @@ interface DriftDetail {
 
 ## Resolving Drift
 
-Immutable drift (partition key, unique keys) cannot be fixed by `syncContainers()`. To resolve it:
-
-1. Export data from the container
-2. Delete the container
-3. Run `syncContainers()` to recreate it
-4. Re-import the data
+<Callout type="warn">
+  Immutable drift (partition key, unique keys) cannot be fixed by `syncContainers()`. To resolve it, you must export data, delete the container, re-run `syncContainers()` to recreate it, and then re-import the data.
+</Callout>
 
 ## Usage Patterns
 
 ### Development: Sync on startup
 
-```ts
+```ts title="index.ts"
 await cosmoose.connect();
 // Register models...
 
@@ -117,8 +114,7 @@ if (process.env.NODE_ENV === 'development') {
 
 ### CI/CD: Sync as a migration step
 
-```ts
-// migration script
+```ts title="migrate.ts"
 import { Cosmoose } from '@cosmoose/core';
 
 const cosmoose = new Cosmoose({ /* config */ });

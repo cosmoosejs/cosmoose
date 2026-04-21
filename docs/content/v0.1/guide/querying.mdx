@@ -1,5 +1,5 @@
 ---
-title: Querying
+title: Querying Documents
 description: Filter, sort, paginate, and iterate documents with the query builder
 ---
 
@@ -7,7 +7,7 @@ The `QueryBuilder` provides a fluent, chainable API for querying Cosmos DB conta
 
 ## Basic Queries
 
-```ts
+```ts title="index.ts"
 // Find with filters (default limit: 50)
 const users = await User.find({ role: 'admin' });
 
@@ -25,14 +25,14 @@ const count = await User.count({ role: 'admin' });
 
 ### Equality
 
-```ts
+```ts title="index.ts"
 await User.find({ role: 'admin' });
 // WHERE r.role = @role
 ```
 
 ### Comparison
 
-```ts
+```ts title="index.ts"
 await User.find({ age: { $gt: 18 } });   // greater than
 await User.find({ age: { $gte: 18 } });  // greater than or equal
 await User.find({ age: { $lt: 65 } });   // less than
@@ -41,14 +41,14 @@ await User.find({ age: { $lte: 65 } });  // less than or equal
 
 ### In
 
-```ts
+```ts title="index.ts"
 await User.find({ role: { $in: ['admin', 'moderator'] } });
 // WHERE r.role IN (@role_0, @role_1)
 ```
 
 ### Combining Operators
 
-```ts
+```ts title="index.ts"
 await User.find({
   age: { $gte: 18, $lt: 65 },
   role: 'member',
@@ -60,7 +60,7 @@ await User.find({
 
 ### $or
 
-```ts
+```ts title="index.ts"
 await User.find({
   $or: [
     { role: 'admin' },
@@ -72,7 +72,7 @@ await User.find({
 
 ### $and
 
-```ts
+```ts title="index.ts"
 await User.find({
   $and: [
     { status: 'active' },
@@ -83,7 +83,7 @@ await User.find({
 
 ## Sorting
 
-```ts
+```ts title="index.ts"
 await User.find({ status: 'active' })
   .sort({ name: 1 });    // ascending
 
@@ -99,7 +99,7 @@ await User.find()
 
 ### Offset / Limit
 
-```ts
+```ts title="index.ts"
 // First page
 const page1 = await User.find()
   .sort({ name: 1 })
@@ -117,7 +117,7 @@ const page2 = await User.find()
 
 For large datasets, continuation token pagination is more efficient:
 
-```ts
+```ts title="index.ts"
 // First page
 const result = await User.findAsTokenPagination(
   { status: 'active' },
@@ -134,11 +134,15 @@ const page2 = await User.findAsTokenPagination(
 );
 ```
 
+<Callout type="idea">
+  Token pagination is preferred over offset/limit for large datasets — it avoids the cost of skipping documents.
+</Callout>
+
 ## Cursor Iteration
 
 For processing large result sets without loading everything into memory:
 
-```ts
+```ts title="index.ts"
 const cursor = await User.findAsCursor(
   { status: 'active' },
   { batchSize: 100 },
@@ -149,7 +153,9 @@ await cursor.each(async (doc, index) => {
 });
 ```
 
-The cursor fetches documents in batches (default: 100) and yields them one at a time.
+<Callout type="info">
+  The cursor fetches documents in batches (default: 100) and yields them one at a time.
+</Callout>
 
 ## Query Methods Summary
 
@@ -167,7 +173,7 @@ The cursor fetches documents in batches (default: 100) and yields them one at a 
 
 Query builders implement `PromiseLike`, so they can be used with `await` directly:
 
-```ts
+```ts title="index.ts"
 // These are equivalent
 const users = await User.find({ role: 'admin' });
 const users = await User.find({ role: 'admin' }).exec();
@@ -175,7 +181,7 @@ const users = await User.find({ role: 'admin' }).exec();
 
 You can also chain `.sort()`, `.limit()`, and `.offset()` before awaiting:
 
-```ts
+```ts title="index.ts"
 const users = await User.find({ role: 'admin' })
   .sort({ name: 1 })
   .limit(10);

@@ -7,7 +7,7 @@ description: API reference for Type enum, Document, PatchExpression, and other t
 
 Field type identifiers used in schema definitions.
 
-```ts
+```ts title="index.ts"
 import { Type } from '@cosmoose/core';
 ```
 
@@ -29,7 +29,7 @@ import { Type } from '@cosmoose/core';
 
 Represents a document returned from Cosmos DB. Extends `T` with auto-added fields.
 
-```ts
+```ts title="types.ts"
 type Document<T> = T & {
   id: string;
   _etag?: string;
@@ -50,7 +50,7 @@ When timestamps are enabled on the schema, documents also include:
 
 Operators for partial document updates via `patchById()`.
 
-```ts
+```ts title="types.ts"
 interface PatchExpression<T> {
   $set?: Partial<T>;
   $add?: Partial<Record<keyof T, unknown>>;
@@ -72,7 +72,7 @@ interface PatchExpression<T> {
 
 Maps field names to their descriptors.
 
-```ts
+```ts title="types.ts"
 type SchemaDefinition<T> = {
   [K in keyof T]: FieldDescriptor;
 };
@@ -90,7 +90,7 @@ Union of all field descriptor types. See [Schema API](/docs/api/schema) for deta
 
 Container-level configuration used by schema options and `syncContainers()`.
 
-```ts
+```ts title="types.ts"
 interface ContainerConfig {
   partitionKey?: PartitionKeyDefinition;
   uniqueKeys?: string[][];
@@ -103,7 +103,7 @@ interface ContainerConfig {
 
 ## Type: PartitionKeyDefinition
 
-```ts
+```ts title="types.ts"
 type PartitionKeyDefinition =
   | string                                    // simple: '/email'
   | { paths: string[]; kind?: 'Hash' }        // hash
@@ -114,7 +114,7 @@ type PartitionKeyDefinition =
 
 ## Interface: CompositeIndexEntry
 
-```ts
+```ts title="types.ts"
 interface CompositeIndexEntry {
   [path: string]: 1 | -1;  // 1 = ascending, -1 = descending
 }
@@ -126,7 +126,7 @@ interface CompositeIndexEntry {
 
 ### ContainerSyncResult
 
-```ts
+```ts title="types.ts"
 interface ContainerSyncResult {
   name: string;
   status: ContainerSyncStatus;
@@ -137,13 +137,13 @@ interface ContainerSyncResult {
 
 ### ContainerSyncStatus
 
-```ts
+```ts title="types.ts"
 type ContainerSyncStatus = 'created' | 'updated' | 'drift' | 'unchanged';
 ```
 
 ### DriftDetail
 
-```ts
+```ts title="types.ts"
 interface DriftDetail {
   property: string;
   expected: unknown;
@@ -155,7 +155,7 @@ interface DriftDetail {
 
 ### SyncReport
 
-```ts
+```ts title="types.ts"
 type SyncReport = ContainerSyncResult[];
 ```
 
@@ -181,13 +181,13 @@ Thrown when an invalid unique key is specified in the container config.
 
 ### `generateId()`
 
-```ts
+```ts title="Signature"
 function generateId(): string
 ```
 
 Generates a UUID v7 string (no hyphens). Used automatically by `Model.create()` but can be called directly:
 
-```ts
+```ts title="index.ts"
 import { generateId } from '@cosmoose/core';
 
 const id = generateId(); // e.g. '019756a0b5947d3a8e4c1f2b3d4e5f6a'

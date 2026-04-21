@@ -7,7 +7,7 @@ description: API reference for the Model class
 
 Provides type-safe CRUD operations for a Cosmos DB container.
 
-```ts
+```ts title="index.ts"
 // Obtained from cosmoose.model()
 const User = cosmoose.model('users', userSchema);
 ```
@@ -18,7 +18,7 @@ const User = cosmoose.model('users', userSchema);
 
 #### `create(data)`
 
-```ts
+```ts title="Signature"
 async create(data: Partial<T>): Promise<Document<T>>
 ```
 
@@ -30,7 +30,7 @@ Creates a new document. Validates against the schema, auto-generates an ID (UUID
 
 #### `getById(id, options?)`
 
-```ts
+```ts title="Signature"
 async getById(id: string, options?: { partitionKeyValue?: PartitionKey }): Promise<Document<T> | undefined>
 ```
 
@@ -40,7 +40,7 @@ Point-reads a document by ID. Returns `undefined` if not found.
 
 #### `updateById(id, data, options?)`
 
-```ts
+```ts title="Signature"
 async updateById(id: string, data: Partial<T>, options?: { partitionKeyValue?: PartitionKey }): Promise<Document<T> | undefined>
 ```
 
@@ -50,7 +50,7 @@ Full document replacement. Returns `undefined` if not found. Sets `updatedAt` if
 
 #### `patchById(id, expression, options?)`
 
-```ts
+```ts title="Signature"
 async patchById(id: string, expression: PatchExpression<T> | Partial<T>, options?: { partitionKeyValue?: PartitionKey }): Promise<Document<T> | undefined>
 ```
 
@@ -60,7 +60,7 @@ Partial update. Accepts either a `PatchExpression<T>` with operators or a plain 
 
 #### `deleteById(id, options?)`
 
-```ts
+```ts title="Signature"
 async deleteById(id: string, options?: { partitionKeyValue?: PartitionKey }): Promise<boolean | undefined>
 ```
 
@@ -70,7 +70,7 @@ Deletes a document. Returns `true` on success, `undefined` if not found.
 
 #### `deleteMany(filter)`
 
-```ts
+```ts title="Signature"
 async deleteMany(filter: Record<string, unknown>): Promise<void>
 ```
 
@@ -80,7 +80,7 @@ Deletes all documents matching the filter. Uses cursor iteration internally with
 
 #### `createBatch(items, options?)`
 
-```ts
+```ts title="Signature"
 async createBatch(items: Partial<T>[], options?: { retryOnError?: boolean }): Promise<BatchResult<T>>
 ```
 
@@ -90,7 +90,7 @@ Bulk creates documents. Items that fail validation are added to `failed` without
 
 #### `upsertBatch(items)`
 
-```ts
+```ts title="Signature"
 async upsertBatch(items: Partial<T>[]): Promise<BatchResult<T>>
 ```
 
@@ -100,7 +100,7 @@ Bulk upserts (insert or replace) documents.
 
 #### `find(filter?)`
 
-```ts
+```ts title="Signature"
 find(filter?: Record<string, unknown>): QueryBuilder<T, 'find'>
 ```
 
@@ -110,7 +110,7 @@ Returns a query builder for finding documents. Default limit: 50. Chainable with
 
 #### `findOne(filter?)`
 
-```ts
+```ts title="Signature"
 findOne(filter?: Record<string, unknown>): QueryBuilder<T, 'findOne'>
 ```
 
@@ -120,7 +120,7 @@ Returns a query builder that resolves to a single document or `undefined`.
 
 #### `findAll(filter?)`
 
-```ts
+```ts title="Signature"
 findAll(filter?: Record<string, unknown>): QueryBuilder<T, 'findAll'>
 ```
 
@@ -130,7 +130,7 @@ Returns a query builder with no limit. Use with caution on large datasets.
 
 #### `count(filter?)`
 
-```ts
+```ts title="Signature"
 count(filter?: Record<string, unknown>): QueryBuilder<T, 'count'>
 ```
 
@@ -140,7 +140,7 @@ Returns a query builder that resolves to the count of matching documents.
 
 #### `findAsCursor(filter?, options?)`
 
-```ts
+```ts title="Signature"
 findAsCursor(filter?: Record<string, unknown>, options?: { batchSize?: number }): QueryBuilder<T, 'findAsCursor'>
 ```
 
@@ -150,7 +150,7 @@ Returns a query builder that resolves to a `Cursor<T>` for batch iteration.
 
 #### `findAsTokenPagination(filter?, options?)`
 
-```ts
+```ts title="Signature"
 findAsTokenPagination(filter?: Record<string, unknown>, options?: { limit?: number; paginationToken?: string }): QueryBuilder<T, 'findAsTokenPagination'>
 ```
 
@@ -160,7 +160,7 @@ Returns a query builder that resolves to a `TokenPaginationResult<T>`.
 
 #### `findByIds(ids)`
 
-```ts
+```ts title="Signature"
 async findByIds(ids: string[]): Promise<Document<T>[]>
 ```
 
@@ -170,7 +170,7 @@ Retrieves multiple documents by their IDs.
 
 #### `rawQuery(querySpec)`
 
-```ts
+```ts title="Signature"
 async rawQuery(querySpec: SqlQuerySpec): Promise<Document<T>[]>
 ```
 
@@ -180,7 +180,7 @@ Executes a raw Cosmos DB SQL query.
 
 ### BatchResult\<T\>
 
-```ts
+```ts title="types.ts"
 interface BatchResult<T> {
   succeed: Document<T>[];
   failed: { item: unknown; error: unknown }[];

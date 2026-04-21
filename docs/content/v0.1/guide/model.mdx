@@ -1,5 +1,5 @@
 ---
-title: Model
+title: Working with Models
 description: CRUD operations, timestamps, and document management
 ---
 
@@ -7,22 +7,24 @@ A `Model` provides type-safe CRUD operations for a Cosmos DB container.
 
 ## Registering a Model
 
-```ts
+```ts title="index.ts"
 const User = cosmoose.model('users', userSchema);
 ```
 
 The first argument is the container name. The model is bound to this container and uses the schema for validation and serialization.
 
-A model can only be registered once per name. The connection must be established first:
+<Callout type="info">
+  A model can only be registered once per name. The connection must be established first.
+</Callout>
 
-```ts
+```ts title="index.ts"
 await cosmoose.connect();
 const User = cosmoose.model('users', userSchema); // ✓
 ```
 
 ## Create
 
-```ts
+```ts title="index.ts"
 const user = await User.create({
   name: 'Alice',
   email: 'alice@example.com',
@@ -40,10 +42,12 @@ console.log(user.createdAt); // set if timestamps enabled
 
 ## Get By ID
 
-```ts
+```ts title="index.ts"
 const user = await User.getById('some-id');
 // undefined if not found
+```
 
+```ts title="index.ts"
 // With partition key for efficient point reads
 const user = await User.getById('some-id', {
   partitionKeyValue: 'alice@example.com',
@@ -54,7 +58,7 @@ const user = await User.getById('some-id', {
 
 Full document replacement:
 
-```ts
+```ts title="index.ts"
 const updated = await User.updateById('some-id', {
   name: 'Alice Smith',
   email: 'alice@example.com',
@@ -63,18 +67,22 @@ const updated = await User.updateById('some-id', {
 // undefined if not found
 ```
 
-`updatedAt` is set automatically if timestamps are enabled.
+<Callout type="info">
+  `updatedAt` is set automatically if timestamps are enabled.
+</Callout>
 
 ## Patch By ID
 
 Partial updates without replacing the full document:
 
-```ts
+```ts title="index.ts"
 // Implicit $set (all fields treated as set operations)
 await User.patchById('some-id', {
   age: 31,
 }, { partitionKeyValue: 'alice@example.com' });
+```
 
+```ts title="index.ts"
 // Explicit operators
 await User.patchById('some-id', {
   $set: { name: 'Alice Smith' },
@@ -83,11 +91,11 @@ await User.patchById('some-id', {
 }, { partitionKeyValue: 'alice@example.com' });
 ```
 
-See the [Patching](/docs/guide/patching) guide for full operator reference.
+See the [Partial Updates](/docs/guide/patching) guide for full operator reference.
 
 ## Delete By ID
 
-```ts
+```ts title="index.ts"
 const deleted = await User.deleteById('some-id', {
   partitionKeyValue: 'alice@example.com',
 });
@@ -98,7 +106,7 @@ const deleted = await User.deleteById('some-id', {
 
 Delete all documents matching a filter:
 
-```ts
+```ts title="index.ts"
 await User.deleteMany({ role: 'inactive' });
 ```
 
@@ -106,7 +114,7 @@ await User.deleteMany({ role: 'inactive' });
 
 Retrieve multiple documents by their IDs:
 
-```ts
+```ts title="index.ts"
 const users = await User.findByIds(['id-1', 'id-2', 'id-3']);
 ```
 
@@ -114,7 +122,7 @@ const users = await User.findByIds(['id-1', 'id-2', 'id-3']);
 
 Execute a raw Cosmos DB SQL query:
 
-```ts
+```ts title="index.ts"
 const results = await User.rawQuery({
   query: 'SELECT * FROM root r WHERE r.age > @age',
   parameters: [{ name: '@age', value: 25 }],
@@ -125,20 +133,22 @@ const results = await User.rawQuery({
 
 Many operations accept an optional `partitionKeyValue` for efficient point reads:
 
-```ts
+```ts title="index.ts"
 await User.getById(id, { partitionKeyValue: 'alice@example.com' });
 await User.updateById(id, data, { partitionKeyValue: 'alice@example.com' });
 await User.patchById(id, patch, { partitionKeyValue: 'alice@example.com' });
 await User.deleteById(id, { partitionKeyValue: 'alice@example.com' });
 ```
 
-If omitted, Cosmos DB performs a cross-partition read (less efficient).
+<Callout type="idea">
+  If omitted, Cosmos DB performs a cross-partition read which is less efficient. Always provide the partition key value when you have it.
+</Callout>
 
 ## Document Type
 
 All returned documents include auto-added fields:
 
-```ts
+```ts title="types.ts"
 interface Document<T> {
   id: string;           // document ID
   // ... your fields from T

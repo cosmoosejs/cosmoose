@@ -1,5 +1,5 @@
 ---
-title: Patching
+title: Partial Updates
 description: Partial updates with $set, $incr, $unset, and $add operators
 ---
 
@@ -9,7 +9,7 @@ Patching allows you to partially update a document without replacing it entirely
 
 When you pass a plain object without operators, all fields are treated as `$set` operations:
 
-```ts
+```ts title="index.ts"
 await User.patchById(id, {
   name: 'Alice Smith',
   age: 31,
@@ -22,7 +22,7 @@ This sets `name` to `'Alice Smith'` and `age` to `31`. Other fields remain uncha
 
 Use `PatchExpression<T>` for more control:
 
-```ts
+```ts title="index.ts"
 await User.patchById(id, {
   $set: { name: 'Alice Smith' },
   $incr: { loginCount: 1 },
@@ -37,7 +37,7 @@ await User.patchById(id, {
 
 Set one or more fields to new values:
 
-```ts
+```ts title="index.ts"
 await User.patchById(id, {
   $set: {
     name: 'Alice Smith',
@@ -48,7 +48,7 @@ await User.patchById(id, {
 
 Nested objects are flattened into individual set operations:
 
-```ts
+```ts title="index.ts"
 await User.patchById(id, {
   $set: {
     address: { city: 'Berlin', zip: '10115' },
@@ -61,7 +61,7 @@ await User.patchById(id, {
 
 Increment a numeric field:
 
-```ts
+```ts title="index.ts"
 await User.patchById(id, {
   $incr: { loginCount: 1 },    // +1
 });
@@ -75,19 +75,21 @@ await User.patchById(id, {
 
 Remove a field from the document:
 
-```ts
+```ts title="index.ts"
 await User.patchById(id, {
   $unset: { temporaryFlag: true },
 });
 ```
 
-The value (`true`) is required as a marker but doesn't affect the operation.
+<Callout type="info">
+  The value (`true`) is required as a marker but doesn't affect the operation.
+</Callout>
 
 ### $add
 
 Add a value to a field (typically used with arrays or to create new fields):
 
-```ts
+```ts title="index.ts"
 await User.patchById(id, {
   $add: { tags: 'verified' },
 });
@@ -97,7 +99,7 @@ await User.patchById(id, {
 
 Multiple operators can be used in a single patch:
 
-```ts
+```ts title="index.ts"
 await User.patchById(id, {
   $set: { status: 'active' },
   $incr: { version: 1 },
@@ -107,8 +109,12 @@ await User.patchById(id, {
 
 ## Large Patches
 
-Cosmos DB limits patch operations to 10 per request. Cosmoose automatically batches larger patches, splitting them into multiple requests transparently.
+<Callout type="info">
+  Cosmos DB limits patch operations to 10 per request. Cosmoose automatically batches larger patches, splitting them into multiple requests transparently.
+</Callout>
 
 ## Timestamps
 
-When timestamps are enabled on the schema, `updatedAt` is automatically updated on every patch operation.
+<Callout type="idea">
+  When timestamps are enabled on the schema, `updatedAt` is automatically updated on every patch operation.
+</Callout>

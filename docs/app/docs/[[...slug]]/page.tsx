@@ -1,18 +1,35 @@
-import { source } from '@/lib/source';
+import { getSource, parseVersionedSlug, versions } from '@/lib/source';
 import {
   DocsPage,
   DocsBody,
 } from 'fumadocs-ui/page';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getMDXComponents } from '@/components/mdx';
+import { VersionNotFound } from '@/components/version-not-found';
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
 }) {
   const params = await props.params;
-  const page = source.getPage(params.slug);
+  const { version, isLatest, pageSlug } = parseVersionedSlug(params.slug);
 
-  if (!page) notFound();
+  if (!pageSlug || pageSlug.length === 0) {
+    const prefix = isLatest ? '/docs' : `/docs/${version}`;
+    redirect(`${prefix}/getting-started/quick-start`);
+  }
+
+  const source = getSource(version);
+
+  if (!source) notFound();
+
+  const page = source.getPage(pageSlug);
+
+  if (!page) {
+    if (!isLatest) {
+      return <VersionNotFound version={version} slug={pageSlug} />;
+    }
+    notFound();
+  }
 
   const Mdx = page.data.body;
   const toc = page.data.toc;
@@ -33,14 +50,37 @@ export default async function Page(props: {
 }
 
 export function generateStaticParams() {
-  return source.generateParams();
+  const allParams: { slug?: string[] }[] = [];
+
+  // Latest version pages (no version prefix)
+  const latestSource = getSource()!;
+  for (const param of latestSource.generateParams()) {
+    allParams.push(param);
+  }
+
+  // Non-latest version pages (with version prefix)
+  for (const version of versions.versions) {
+    if (version === versions.latest) continue;
+    const source = getSource(version);
+    if (!source) continue;
+    for (const param of source.generateParams()) {
+      allParams.push({ slug: [version, ...(param.slug ?? [])] });
+    }
+  }
+
+  return allParams;
 }
 
 export async function generateMetadata(props: {
   params: Promise<{ slug?: string[] }>;
 }) {
   const params = await props.params;
-  const page = source.getPage(params.slug);
+  const { version, pageSlug } = parseVersionedSlug(params.slug);
+  const source = getSource(version);
+
+  if (!source) return {};
+
+  const page = source.getPage(pageSlug);
 
   if (!page) return {};
 

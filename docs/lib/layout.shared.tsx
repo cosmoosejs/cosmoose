@@ -8,5 +8,6 @@ export function baseOptions(): BaseLayoutProps {
         <img src="/logo-typo.svg" alt="Cosmoose" className="h-5 dark:invert" />
       ),
     },
+    githubUrl: 'https://github.com/cosmoosejs/cosmoose',
   };
 }

@@ -7,7 +7,7 @@ description: API reference for QueryBuilder, Cursor, and TokenPaginationResult
 
 A fluent, chainable query builder that generates parameterized Cosmos DB SQL queries. Implements `PromiseLike` so it can be awaited directly.
 
-```ts
+```ts title="index.ts"
 // Obtained from Model methods
 const query = User.find({ role: 'admin' });
 ```
@@ -20,13 +20,13 @@ The type parameter `Q` determines the return type when the query is awaited.
 
 #### `sort(fields)`
 
-```ts
+```ts title="Signature"
 sort(fields: Record<string, 1 | -1>): this
 ```
 
 Set sort order. `1` for ascending, `-1` for descending.
 
-```ts
+```ts title="index.ts"
 User.find().sort({ name: 1, createdAt: -1 });
 ```
 
@@ -34,7 +34,7 @@ User.find().sort({ name: 1, createdAt: -1 });
 
 #### `limit(value)`
 
-```ts
+```ts title="Signature"
 limit(value: number): this
 ```
 
@@ -44,7 +44,7 @@ Set maximum number of results.
 
 #### `offset(value)`
 
-```ts
+```ts title="Signature"
 offset(value: number): this
 ```
 
@@ -56,7 +56,7 @@ Set the number of results to skip (for offset-based pagination).
 
 #### `exec()`
 
-```ts
+```ts title="Signature"
 async exec(): Promise<Result>
 ```
 
@@ -75,13 +75,13 @@ Executes the query and returns the result. The return type depends on `Q`:
 
 #### `then()`
 
-```ts
+```ts title="Signature"
 then(onfulfilled?, onrejected?): Promise<Result>
 ```
 
 Implements `PromiseLike` so queries can be awaited directly:
 
-```ts
+```ts title="index.ts"
 const users = await User.find({ role: 'admin' });
 ```
 
@@ -89,13 +89,13 @@ const users = await User.find({ role: 'admin' });
 
 #### `buildQuery()`
 
-```ts
+```ts title="Signature"
 buildQuery(): SqlQuerySpec
 ```
 
 Returns the generated SQL query specification without executing it. Useful for debugging:
 
-```ts
+```ts title="index.ts"
 const spec = User.find({ age: { $gt: 18 } }).buildQuery();
 console.log(spec.query);      // SELECT * FROM root r WHERE r.age > @age_0 ...
 console.log(spec.parameters); // [{ name: '@age_0', value: 18 }]
@@ -124,7 +124,7 @@ Filters are passed as the first argument to query methods:
 
 An iterator for processing large result sets in batches.
 
-```ts
+```ts title="types.ts"
 interface Cursor<T> {
   each(fn: (doc: Document<T>, index: number) => Promise<void> | void): Promise<void>;
 }
@@ -134,7 +134,7 @@ interface Cursor<T> {
 
 Iterates over all matching documents, fetching in batches (configurable via `batchSize`). The callback receives each document and its zero-based index.
 
-```ts
+```ts title="index.ts"
 const cursor = await User.findAsCursor({}, { batchSize: 100 });
 await cursor.each(async (doc, index) => {
   // process each document
@@ -147,7 +147,7 @@ await cursor.each(async (doc, index) => {
 
 Result of a token-based paginated query.
 
-```ts
+```ts title="types.ts"
 interface TokenPaginationResult<T> {
   data: Document<T>[];
   pagination: {

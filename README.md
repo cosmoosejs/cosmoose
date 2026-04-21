@@ -79,7 +79,7 @@ const count = await User.count({ age: { $gte: 18 } });
 
 📖 **[Full documentation →](https://cosmoose.vercel.app)**
 
-- [Installation](https://cosmoose.vercel.app/docs/getting-started/installation)
+- [Quick Start](https://cosmoose.vercel.app/docs/getting-started/quick-start)
 - [Quick Start](https://cosmoose.vercel.app/docs/getting-started/quick-start)
 - [Schema Guide](https://cosmoose.vercel.app/docs/guide/schema)
 - [Query Guide](https://cosmoose.vercel.app/docs/guide/querying)

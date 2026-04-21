@@ -7,13 +7,13 @@ description: API reference for the Cosmoose connection class
 
 The main entry point for connecting to Azure Cosmos DB and registering models. Extends `EventEmitter`.
 
-```ts
+```ts title="index.ts"
 import { Cosmoose } from '@cosmoose/core';
 ```
 
 ### Constructor
 
-```ts
+```ts title="Signature"
 new Cosmoose(options: CosmooseOptions)
 ```
 
@@ -31,17 +31,21 @@ new Cosmoose(options: CosmooseOptions)
 
 #### `connect()`
 
-```ts
+```ts title="Signature"
 async connect(): Promise<void>
 ```
 
-Connects to the database and creates it if it doesn't exist. Safe to call multiple times — subsequent calls are no-ops.
+Connects to the database and creates it if it doesn't exist.
+
+<Callout type="info">
+  Safe to call multiple times — subsequent calls are no-ops.
+</Callout>
 
 ---
 
 #### `model(name, schema)`
 
-```ts
+```ts title="Signature"
 model<T>(name: string, schema: Schema<T>): Model<T>
 ```
 
@@ -60,7 +64,7 @@ Registers a model for the given container name. Must be called after `connect()`
 
 #### `syncContainers()`
 
-```ts
+```ts title="Signature"
 async syncContainers(): Promise<SyncReport>
 ```
 
@@ -72,7 +76,7 @@ Syncs all registered model containers. Creates missing containers, updates mutab
 
 #### `syncContainer(name)`
 
-```ts
+```ts title="Signature"
 async syncContainer(name: string): Promise<ContainerSyncResult>
 ```
 
@@ -82,7 +86,7 @@ Syncs a single container by name.
 
 #### `isConnected()`
 
-```ts
+```ts title="Signature"
 isConnected(): boolean
 ```
 
@@ -92,7 +96,7 @@ Returns `true` if connected to the database.
 
 #### `getDatabase()`
 
-```ts
+```ts title="Signature"
 getDatabase(): Database | undefined
 ```
 
@@ -102,7 +106,7 @@ Returns the underlying `@azure/cosmos` `Database` instance, or `undefined` if no
 
 #### `getRegisteredModels()`
 
-```ts
+```ts title="Signature"
 getRegisteredModels(): Map<string, RegisteredModel>
 ```
 

@@ -1,19 +1,20 @@
 ---
 title: Configuration
 description: CosmooseOptions and connection setup
+icon: Settings
 ---
 
 ## CosmooseOptions
 
 The `Cosmoose` constructor accepts a configuration object:
 
-```ts
+```ts title="index.ts"
 import { Cosmoose } from '@cosmoose/core';
 
 const cosmoose = new Cosmoose({
   endpoint: 'https://your-account.documents.azure.com:443/',
-  key: 'your-primary-key',
-  databaseName: 'my-database',
+  key: process.env.COSMOS_KEY,
+  databaseName: process.env.COSMOS_DATABASE,
 });
 ```
 
@@ -25,7 +26,7 @@ const cosmoose = new Cosmoose({
 
 ## Connection Lifecycle
 
-```ts
+```ts title="index.ts"
 // Connect to the database
 await cosmoose.connect();
 
@@ -36,13 +37,15 @@ cosmoose.isConnected(); // true
 const database = cosmoose.getDatabase();
 ```
 
-Calling `connect()` multiple times is safe — subsequent calls are no-ops.
+<Callout type="info">
+  Calling `connect()` multiple times is safe — subsequent calls are no-ops.
+</Callout>
 
 ## Events
 
 `Cosmoose` extends `EventEmitter` and emits lifecycle events:
 
-```ts
+```ts title="index.ts"
 cosmoose.on('initiate', () => {
   console.log('Connecting...');
 });
@@ -63,11 +66,11 @@ await cosmoose.connect();
 
 A common pattern is to load configuration from environment variables:
 
-```ts
+```ts title="index.ts"
 const cosmoose = new Cosmoose({
-  endpoint: process.env.COSMOS_ENDPOINT!,
-  key: process.env.COSMOS_KEY!,
-  databaseName: process.env.COSMOS_DATABASE!,
+  endpoint: process.env.COSMOS_ENDPOINT,
+  key: process.env.COSMOS_KEY,
+  databaseName: process.env.COSMOS_DATABASE,
 });
 ```
 
@@ -75,12 +78,14 @@ const cosmoose = new Cosmoose({
 
 For local development, use the [Azure Cosmos DB Emulator](https://learn.microsoft.com/en-us/azure/cosmos-db/emulator):
 
-```ts
+```ts title="index.ts"
 const cosmoose = new Cosmoose({
   endpoint: 'https://localhost:8081',
   key: 'C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==',
-  databaseName: 'local-dev',
+  databaseName: process.env.COSMOS_DATABASE,
 });
 ```
 
-The key shown above is the well-known emulator key.
+<Callout type="info">
+  The key shown above is the well-known emulator key — it's safe to use in code and not a secret.
+</Callout>
