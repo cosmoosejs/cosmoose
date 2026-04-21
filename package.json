@@ -15,7 +15,13 @@
   "packageManager": "pnpm@10.33.0",
   "pnpm": {
     "onlyBuiltDependencies": [
-      "nx"
+      "@nestjs/core",
+      "cpu-features",
+      "esbuild",
+      "nx",
+      "protobufjs",
+      "sharp",
+      "ssh2"
     ],
     "overrides": {
       "@cosmoose/core": "workspace:*"
