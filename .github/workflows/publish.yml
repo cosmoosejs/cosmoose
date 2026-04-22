@@ -72,13 +72,22 @@ jobs:
             exit 1
           fi
 
+      - name: Detect first release
+        id: first-release
+        run: |
+          if git tag -l | grep -q .; then
+            echo "flag=" >> "$GITHUB_OUTPUT"
+          else
+            echo "flag=--first-release" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Version + Changelog (stable)
         if: inputs.channel == 'latest'
-        run: pnpm exec nx release --skip-publish --verbose
+        run: pnpm exec nx release --skip-publish ${{ steps.first-release.outputs.flag }} --verbose
 
       - name: Version + Changelog (pre-release)
         if: inputs.channel != 'latest'
-        run: pnpm exec nx release --skip-publish --preid ${{ inputs.channel }} --verbose
+        run: pnpm exec nx release --skip-publish --preid ${{ inputs.channel }} ${{ steps.first-release.outputs.flag }} --verbose
 
       - name: Push version commit and tags
         # --no-verify: skip Husky pre-push hook — quality gates already passed in the gate job
