@@ -258,7 +258,7 @@ describe('Model CRUD Integration', () => {
       }, {
         timestamps: true,
         container: {
-          partitionKey: { paths: ['/tenantId', '/userId'], kind: 'MultiHash' },
+          partitionKey: { paths: [ '/tenantId', '/userId' ], kind: 'MultiHash' },
         },
       });
 
@@ -274,7 +274,7 @@ describe('Model CRUD Integration', () => {
       expect(created.tenantId).toBe('t1');
       expect(created.userId).toBe('u1');
 
-      const found = await tenantModel.getById(created.id, { partitionKeyValue: ['t1', 'u1'] });
+      const found = await tenantModel.getById(created.id, { partitionKeyValue: [ 't1', 'u1' ] });
       expect(found).toBeDefined();
       expect(found!.value).toBe('hello');
     });
@@ -288,7 +288,7 @@ describe('Model CRUD Integration', () => {
 
     it('should update a document with hierarchical partition key', async () => {
       const created = await tenantModel.create({ tenantId: 't1', userId: 'u2', value: 'original' });
-      const updated = await tenantModel.updateById(created.id, { value: 'updated' }, { partitionKeyValue: ['t1', 'u2'] });
+      const updated = await tenantModel.updateById(created.id, { value: 'updated' }, { partitionKeyValue: [ 't1', 'u2' ] });
 
       expect(updated).toBeDefined();
       expect(updated!.value).toBe('updated');
@@ -296,7 +296,7 @@ describe('Model CRUD Integration', () => {
 
     it('should patch a document with hierarchical partition key', async () => {
       const created = await tenantModel.create({ tenantId: 't1', userId: 'u3', value: 'before' });
-      const patched = await tenantModel.patchById(created.id, { $set: { value: 'after' } }, { partitionKeyValue: ['t1', 'u3'] });
+      const patched = await tenantModel.patchById(created.id, { $set: { value: 'after' } }, { partitionKeyValue: [ 't1', 'u3' ] });
 
       expect(patched).toBeDefined();
       expect(patched!.value).toBe('after');
@@ -304,11 +304,11 @@ describe('Model CRUD Integration', () => {
 
     it('should delete a document with hierarchical partition key', async () => {
       const created = await tenantModel.create({ tenantId: 't1', userId: 'u4', value: 'deleteme' });
-      const deleted = await tenantModel.deleteById(created.id, { partitionKeyValue: ['t1', 'u4'] });
+      const deleted = await tenantModel.deleteById(created.id, { partitionKeyValue: [ 't1', 'u4' ] });
 
       expect(deleted).toBe(true);
 
-      const found = await tenantModel.getById(created.id, { partitionKeyValue: ['t1', 'u4'] });
+      const found = await tenantModel.getById(created.id, { partitionKeyValue: [ 't1', 'u4' ] });
       expect(found).toBeUndefined();
     });
 

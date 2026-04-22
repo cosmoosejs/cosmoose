@@ -80,6 +80,9 @@ jobs:
         if: inputs.channel != 'latest'
         run: pnpm exec nx release --skip-publish --preid ${{ inputs.channel }} --verbose
 
+      - name: Push version commit and tags
+        run: git push --follow-tags
+
       - name: Build
         run: pnpm exec nx run-many --target=build
 

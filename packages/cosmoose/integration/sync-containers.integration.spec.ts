@@ -52,7 +52,7 @@ describe('syncContainers Integration', () => {
         data: { type: Type.STRING },
       }, {
         container: {
-          partitionKey: { paths: ['/tenantId', '/userId'], kind: 'MultiHash' },
+          partitionKey: { paths: [ '/tenantId', '/userId' ], kind: 'MultiHash' },
         },
       });
 
@@ -63,7 +63,7 @@ describe('syncContainers Integration', () => {
       expect(result).toBeDefined();
 
       const { resource } = await client.database(dbName).container('HierarchicalPKTest').read();
-      expect(resource!.partitionKey!.paths).toEqual(['/tenantId', '/userId']);
+      expect(resource!.partitionKey!.paths).toEqual([ '/tenantId', '/userId' ]);
       expect(resource!.partitionKey!.kind).toBe('MultiHash');
     });
   });
