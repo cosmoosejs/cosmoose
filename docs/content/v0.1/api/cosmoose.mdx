@@ -1,0 +1,122 @@
+---
+title: Cosmoose
+description: API reference for the Cosmoose connection class
+---
+
+## Class: Cosmoose
+
+The main entry point for connecting to Azure Cosmos DB and registering models. Extends `EventEmitter`.
+
+```ts title="index.ts"
+import { Cosmoose } from '@cosmoose/core';
+```
+
+### Constructor
+
+```ts title="Signature"
+new Cosmoose(options: CosmooseOptions)
+```
+
+#### CosmooseOptions
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `endpoint` | `string` | Cosmos DB account endpoint URL |
+| `key` | `string` | Primary or secondary access key |
+| `databaseName` | `string` | Database name (created if it doesn't exist) |
+
+---
+
+### Methods
+
+#### `connect()`
+
+```ts title="Signature"
+async connect(): Promise<void>
+```
+
+Connects to the database and creates it if it doesn't exist.
+
+<Callout type="info">
+  Safe to call multiple times — subsequent calls are no-ops.
+</Callout>
+
+---
+
+#### `model(name, schema)`
+
+```ts title="Signature"
+model<T>(name: string, schema: Schema<T>): Model<T>
+```
+
+Registers a model for the given container name. Must be called after `connect()`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | Container name in Cosmos DB |
+| `schema` | `Schema<T>` | Schema defining document shape |
+
+**Returns:** `Model<T>`
+
+**Throws:** `Error` if not connected or if model name is already registered.
+
+---
+
+#### `syncContainers()`
+
+```ts title="Signature"
+async syncContainers(): Promise<SyncReport>
+```
+
+Syncs all registered model containers. Creates missing containers, updates mutable properties, and reports drift for immutable properties.
+
+**Returns:** `SyncReport` (array of `ContainerSyncResult`)
+
+---
+
+#### `syncContainer(name)`
+
+```ts title="Signature"
+async syncContainer(name: string): Promise<ContainerSyncResult>
+```
+
+Syncs a single container by name.
+
+---
+
+#### `isConnected()`
+
+```ts title="Signature"
+isConnected(): boolean
+```
+
+Returns `true` if connected to the database.
+
+---
+
+#### `getDatabase()`
+
+```ts title="Signature"
+getDatabase(): Database | undefined
+```
+
+Returns the underlying `@azure/cosmos` `Database` instance, or `undefined` if not connected.
+
+---
+
+#### `getRegisteredModels()`
+
+```ts title="Signature"
+getRegisteredModels(): Map<string, RegisteredModel>
+```
+
+Returns all registered models.
+
+---
+
+### Events
+
+| Event | Payload | When |
+|-------|---------|------|
+| `initiate` | — | Before connection starts |
+| `initiated` | `databaseName: string` | After successful connection |

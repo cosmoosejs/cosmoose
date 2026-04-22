@@ -1,0 +1,41 @@
+---
+title: What is Cosmoose
+description: A type-safe ODM for Azure Cosmos DB
+icon: Info
+---
+
+Cosmoose is a type-safe ODM (Object-Document Mapper) for [Azure Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/introduction) built with TypeScript. It maps your application objects to Cosmos DB documents through schemas and models, giving you a structured, type-safe way to interact with your database.
+
+## Features
+
+| Feature | Description |
+| --- | --- |
+| **Type-safe schemas** | Define document shapes with rich field types and validation powered by Zod |
+| **CRUD operations** | Create, read, update, patch, and delete documents with full type safety |
+| **Fluent query builder** | Filter, sort, paginate, and iterate with a chainable API |
+| **Patch operators** | `$set`, `$incr`, `$unset`, `$add` for efficient partial updates |
+| **Batch operations** | Bulk create and upsert with automatic retry support |
+| **Container sync** | Auto-create and update Cosmos DB containers from your schemas |
+| **Drift detection** | Identify mismatches between schema and container configuration |
+| **UUID v7 IDs** | Sortable, unique identifiers generated automatically |
+| **Timestamps** | Optional `createdAt` / `updatedAt` managed for you |
+
+## How It Works
+
+Cosmoose sits between your application code and the Azure Cosmos DB SDK. You define **schemas** that describe document structure, register **models** that bind schemas to containers, and then use those models to read and write documents.
+
+```
+Schema  →  Model  →  Cosmos DB Container
+```
+
+1. **Schema** — Declares the fields, types, defaults, and validation rules for a document.
+2. **Model** — Connects a schema to a named Cosmos DB container and exposes CRUD and query methods.
+3. **Container sync** — Automatically creates or updates containers to match your schema configuration (partition keys, indexes, TTL).
+
+## Next Steps
+
+<Cards>
+  <Card href="/docs/getting-started/quick-start" title="Quick Start">
+    Install cosmoose and create your first document
+  </Card>
+</Cards>

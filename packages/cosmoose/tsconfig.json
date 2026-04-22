@@ -7,7 +7,12 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "~/*": ["packages/cosmoose/src/*"],
+      "@cosmoose/core": ["packages/cosmoose/src/index.ts"],
+      "@cosmoose/nestjs": ["packages/cosmoose-nestjs/src/index.ts"]
+    }
   },
   "files": [],
   "include": [],

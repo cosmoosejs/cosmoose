@@ -1,0 +1,159 @@
+---
+title: Working with Models
+description: CRUD operations, timestamps, and document management
+---
+
+A `Model` provides type-safe CRUD operations for a Cosmos DB container.
+
+## Registering a Model
+
+```ts title="index.ts"
+const User = cosmoose.model('users', userSchema);
+```
+
+The first argument is the container name. The model is bound to this container and uses the schema for validation and serialization.
+
+<Callout type="info">
+  A model can only be registered once per name. The connection must be established first.
+</Callout>
+
+```ts title="index.ts"
+await cosmoose.connect();
+const User = cosmoose.model('users', userSchema); // ✓
+```
+
+## Create
+
+```ts title="index.ts"
+const user = await User.create({
+  name: 'Alice',
+  email: 'alice@example.com',
+  age: 30,
+});
+
+console.log(user.id);        // auto-generated UUID v7
+console.log(user.createdAt); // set if timestamps enabled
+```
+
+- The document is validated against the schema before insertion
+- An `id` is auto-generated if not provided (UUID v7, no hyphens)
+- Timestamps are set automatically if enabled on the schema
+- Date fields are serialized to ISO strings for storage
+
+## Get By ID
+
+```ts title="index.ts"
+const user = await User.getById('some-id');
+// undefined if not found
+```
+
+```ts title="index.ts"
+// With partition key for efficient point reads
+const user = await User.getById('some-id', {
+  partitionKeyValue: 'alice@example.com',
+});
+```
+
+## Update By ID
+
+Full document replacement:
+
+```ts title="index.ts"
+const updated = await User.updateById('some-id', {
+  name: 'Alice Smith',
+  email: 'alice@example.com',
+  age: 31,
+}, { partitionKeyValue: 'alice@example.com' });
+// undefined if not found
+```
+
+<Callout type="info">
+  `updatedAt` is set automatically if timestamps are enabled.
+</Callout>
+
+## Patch By ID
+
+Partial updates without replacing the full document:
+
+```ts title="index.ts"
+// Implicit $set (all fields treated as set operations)
+await User.patchById('some-id', {
+  age: 31,
+}, { partitionKeyValue: 'alice@example.com' });
+```
+
+```ts title="index.ts"
+// Explicit operators
+await User.patchById('some-id', {
+  $set: { name: 'Alice Smith' },
+  $incr: { loginCount: 1 },
+  $unset: { temporaryFlag: true },
+}, { partitionKeyValue: 'alice@example.com' });
+```
+
+See the [Partial Updates](/docs/guide/patching) guide for full operator reference.
+
+## Delete By ID
+
+```ts title="index.ts"
+const deleted = await User.deleteById('some-id', {
+  partitionKeyValue: 'alice@example.com',
+});
+// true if deleted, undefined if not found
+```
+
+## Delete Many
+
+Delete all documents matching a filter:
+
+```ts title="index.ts"
+await User.deleteMany({ role: 'inactive' });
+```
+
+## Find By IDs
+
+Retrieve multiple documents by their IDs:
+
+```ts title="index.ts"
+const users = await User.findByIds(['id-1', 'id-2', 'id-3']);
+```
+
+## Raw Query
+
+Execute a raw Cosmos DB SQL query:
+
+```ts title="index.ts"
+const results = await User.rawQuery({
+  query: 'SELECT * FROM root r WHERE r.age > @age',
+  parameters: [{ name: '@age', value: 25 }],
+});
+```
+
+## Partition Keys
+
+Many operations accept an optional `partitionKeyValue` for efficient point reads:
+
+```ts title="index.ts"
+await User.getById(id, { partitionKeyValue: 'alice@example.com' });
+await User.updateById(id, data, { partitionKeyValue: 'alice@example.com' });
+await User.patchById(id, patch, { partitionKeyValue: 'alice@example.com' });
+await User.deleteById(id, { partitionKeyValue: 'alice@example.com' });
+```
+
+<Callout type="idea">
+  If omitted, Cosmos DB performs a cross-partition read which is less efficient. Always provide the partition key value when you have it.
+</Callout>
+
+## Document Type
+
+All returned documents include auto-added fields:
+
+```ts title="types.ts"
+interface Document<T> {
+  id: string;           // document ID
+  // ... your fields from T
+  createdAt?: Date;     // if timestamps enabled
+  updatedAt?: Date;     // if timestamps enabled
+  _etag?: string;       // Cosmos DB metadata
+}
+```

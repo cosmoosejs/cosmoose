@@ -34,3 +34,4 @@ Cosmoose is a TypeScript ODM library published as two npm packages from an Nx mo
 ## Rules
 
 - When project information changes (stack, conventions, architecture, patterns), update the relevant `wiki/` document to keep it current.
+- Always use `pnpm` — never `npm` or `yarn`. Use `pnpm exec` instead of `npx` for local binaries and `pnpm dlx` for one-off remote packages.

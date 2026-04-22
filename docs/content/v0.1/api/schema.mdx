@@ -1,0 +1,179 @@
+---
+title: Schema
+description: API reference for the Schema class and SchemaOptions
+---
+
+## Class: Schema\<T\>
+
+Defines the shape, validation rules, and container configuration for documents.
+
+```ts title="index.ts"
+import { Schema, Type } from '@cosmoose/core';
+```
+
+### Constructor
+
+```ts title="Signature"
+new Schema<T>(definition: SchemaDefinition<T>, options?: SchemaOptions)
+```
+
+#### SchemaDefinition\<T\>
+
+A record mapping each field name in `T` to a `FieldDescriptor`:
+
+```ts title="types.ts"
+type SchemaDefinition<T> = {
+  [K in keyof T]: FieldDescriptor;
+};
+```
+
+#### SchemaOptions
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `timestamps` | `boolean` | `false` | Auto-manage `createdAt` / `updatedAt` |
+| `container` | `ContainerConfig` | `{}` | Container-level configuration |
+
+---
+
+### Methods
+
+#### `getDefinition()`
+
+```ts title="Signature"
+getDefinition(): SchemaDefinition<T>
+```
+
+Returns the field definitions.
+
+---
+
+#### `getOptions()`
+
+```ts title="Signature"
+getOptions(): SchemaOptions
+```
+
+Returns the schema options.
+
+---
+
+#### `getContainerConfig()`
+
+```ts title="Signature"
+getContainerConfig(): ContainerConfig
+```
+
+Returns the container configuration (or `{}` if not set).
+
+---
+
+## FieldDescriptor
+
+A union type describing a single field. All descriptors share:
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `type` | `Type` | — | Field type (required) |
+| `optional` | `boolean` | `false` | Whether the field is optional |
+| `default` | varies | — | Default value if not provided |
+
+### StringFieldDescriptor
+
+```ts title="types.ts"
+{ type: Type.STRING, trim?: boolean, lowercase?: boolean, uppercase?: boolean }
+```
+
+### NumberFieldDescriptor
+
+```ts title="types.ts"
+{ type: Type.NUMBER }
+```
+
+### BooleanFieldDescriptor
+
+```ts title="types.ts"
+{ type: Type.BOOLEAN }
+```
+
+### DateFieldDescriptor
+
+```ts title="types.ts"
+{ type: Type.DATE }
+```
+
+### EmailFieldDescriptor
+
+```ts title="types.ts"
+{ type: Type.EMAIL }
+```
+
+<Callout type="info">
+  Auto-applies `trim` and `lowercase`. Validates email format.
+</Callout>
+
+### ObjectFieldDescriptor
+
+```ts title="types.ts"
+{ type: Type.OBJECT, schema: Schema<Record<string, unknown>> }
+```
+
+### ArrayFieldDescriptor
+
+```ts title="types.ts"
+{ type: Type.ARRAY, items: FieldDescriptor }
+```
+
+### MapFieldDescriptor
+
+```ts title="types.ts"
+{ type: Type.MAP, of: Type }
+```
+
+### AnyFieldDescriptor
+
+```ts title="types.ts"
+{ type: Type.ANY }
+```
+
+---
+
+## ContainerConfig
+
+Configuration for the Cosmos DB container, used by `syncContainers()`.
+
+```ts title="types.ts"
+interface ContainerConfig {
+  partitionKey?: PartitionKeyDefinition;
+  uniqueKeys?: string[][];
+  compositeIndexes?: CompositeIndexEntry[];
+  ttl?: number;
+}
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `partitionKey` | `string \| { paths: string[]; kind?: 'Hash' \| 'MultiHash' }` | Partition key definition |
+| `uniqueKeys` | `string[][]` | Unique key constraints |
+| `compositeIndexes` | `{ [path]: 1 \| -1 }[]` | Composite index definitions |
+| `ttl` | `number` | Default time-to-live in seconds |
+
+### PartitionKeyDefinition
+
+```ts title="types.ts"
+// Simple string shorthand
+partitionKey: '/email'
+
+// Hash partition key
+partitionKey: { paths: ['/email'], kind: 'Hash' }
+
+// Hierarchical partition key
+partitionKey: { paths: ['/tenantId', '/userId'], kind: 'MultiHash' }
+```
+
+### CompositeIndexEntry
+
+```ts title="types.ts"
+// Ascending name, descending createdAt
+compositeIndexes: [{ name: 1, createdAt: -1 }]
+```

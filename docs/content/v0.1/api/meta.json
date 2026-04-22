@@ -1,0 +1,4 @@
+{
+  "title": "API Reference",
+  "pages": ["cosmoose", "schema", "model", "query-builder", "types"]
+}

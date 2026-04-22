@@ -5,7 +5,7 @@
   "projectType": "library",
   "tags": [],
   "targets": {
-    "build": {
+    "compile": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
@@ -13,6 +13,15 @@
         "tsConfig": "packages/cosmoose/tsconfig.lib.json",
         "main": "packages/cosmoose/src/index.ts",
         "assets": ["packages/cosmoose/README.md"]
+      },
+      "dependsOn": ["^build"]
+    },
+    "build": {
+      "dependsOn": ["compile"],
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/packages/cosmoose"],
+      "options": {
+        "command": "tsc-alias -p packages/cosmoose/tsconfig.lib.json --outDir dist/packages/cosmoose"
       }
     },
     "test": {
@@ -20,6 +29,12 @@
       "outputs": ["{workspaceRoot}/coverage/packages/cosmoose"],
       "options": {
         "config": "packages/cosmoose/vite.config.ts"
+      }
+    },
+    "test:integration": {
+      "executor": "@nx/vitest:test",
+      "options": {
+        "config": "packages/cosmoose/integration/vitest.config.ts"
       }
     },
     "lint": {

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 394 50" fill="none">
+  <g fill="#000000">
+    <!-- c: x=0 w=44 -->
+    <path d="M44 0H0v50h44V38H20V12h24z"/>
+    <!-- o: x=50 -->
+    <path d="M50 0h44v50H50zm20 12v26h12V12z"/>
+    <!-- s: x=100 -->
+    <path d="M100 0h44v50h-44zM120 10v10h24V10zM100 30v10h24V30z"/>
+    <!-- m: x=150 -->
+    <path d="M150 0h44v50h-8V12h-5v38h-10V12h-5v38h-16z"/>
+    <!-- o: x=200 -->
+    <path d="M200 0h44v50h-44zm20 12v26h12V12z"/>
+    <!-- o: x=250 -->
+    <path d="M250 0h44v50h-44zm20 12v26h12V12z"/>
+    <!-- s: x=300 -->
+    <path d="M300 0h44v50h-44zM320 10v10h24V10zM300 30v10h24V30z"/>
+    <!-- e: x=350 -->
+    <path d="M350 0h44v12h-24v8h20v10h-20v8h24v12h-44z"/>
+  </g>
+</svg>

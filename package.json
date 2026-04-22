@@ -1,10 +1,12 @@
 {
   "name": "cosmoose",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "build": "nx run-many --target=build",
     "test": "nx run-many --target=test",
+    "test:coverage": "nx run-many --target=test -- --coverage",
+    "test:integration": "nx run-many --target=test:integration",
     "lint": "nx run-many --target=lint",
     "prepare": "husky",
     "commit": "cz"
@@ -13,8 +15,17 @@
   "packageManager": "pnpm@10.33.0",
   "pnpm": {
     "onlyBuiltDependencies": [
-      "nx"
-    ]
+      "@nestjs/core",
+      "cpu-features",
+      "esbuild",
+      "nx",
+      "protobufjs",
+      "sharp",
+      "ssh2"
+    ],
+    "overrides": {
+      "@cosmoose/core": "workspace:*"
+    }
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -25,15 +36,21 @@
     "@nx/vitest": "^22.6.5",
     "@nx/workspace": "^22.6.5",
     "@stylistic/eslint-plugin": "^5.10.0",
+    "@testcontainers/azure-cosmosdb-emulator": "^11.14.0",
     "@types/node": "^25.6.0",
     "@typescript-eslint/eslint-plugin": "^8.58.2",
     "@typescript-eslint/parser": "^8.58.2",
+    "@vitest/coverage-v8": "^4.1.4",
     "@vitest/runner": "^4.1.4",
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^10.2.0",
+    "eslint-plugin-simple-import-sort": "^13.0.0",
+    "globals": "^17.5.0",
     "husky": "^9.1.7",
     "nx": "^22.6.5",
+    "testcontainers": "^11.14.0",
+    "tsc-alias": "^1.8.16",
     "typescript": "^6.0.2",
     "vitest": "^4.1.4"
   },
@@ -41,5 +58,8 @@
     "commitizen": {
       "path": "cz-conventional-changelog"
     }
+  },
+  "dependencies": {
+    "@azure/core-client": "^1.10.1"
   }
 }
