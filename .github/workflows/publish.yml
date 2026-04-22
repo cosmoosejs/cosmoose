@@ -81,7 +81,8 @@ jobs:
         run: pnpm exec nx release --skip-publish --preid ${{ inputs.channel }} --verbose
 
       - name: Push version commit and tags
-        run: git push --follow-tags
+        # --no-verify: skip Husky pre-push hook — quality gates already passed in the gate job
+        run: git push --follow-tags --no-verify
 
       - name: Build
         run: pnpm exec nx run-many --target=build
