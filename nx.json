@@ -39,5 +39,26 @@
       "cache": true
     }
   },
+  "release": {
+    "projects": ["cosmoose", "cosmoose-nestjs"],
+    "version": {
+      "conventionalCommits": true,
+      "fallbackCurrentVersionResolver": "disk",
+      "git": {
+        "commit": true,
+        "tag": true
+      }
+    },
+    "changelog": {
+      "workspaceChangelog": {
+        "createRelease": false
+      },
+      "projectChangelogs": true,
+      "git": {
+        "commit": true,
+        "tag": true
+      }
+    }
+  },
   "analytics": true
 }

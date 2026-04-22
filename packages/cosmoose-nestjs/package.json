@@ -12,6 +12,9 @@
     }
   },
   "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "ISC",
   "peerDependencies": {
     "@cosmoose/core": "^0.0.1",
