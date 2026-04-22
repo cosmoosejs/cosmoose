@@ -15,6 +15,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cosmoosejs/cosmoose",
+    "directory": "packages/cosmoose"
+  },
   "license": "ISC",
   "dependencies": {
     "@azure/cosmos": "^4.2.0",

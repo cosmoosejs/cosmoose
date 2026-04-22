@@ -15,6 +15,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cosmoosejs/cosmoose",
+    "directory": "packages/cosmoose-nestjs"
+  },
   "license": "ISC",
   "peerDependencies": {
     "@cosmoose/core": "^0.0.1",
