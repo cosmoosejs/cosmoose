@@ -1,0 +1,88 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Release channel'
+        required: true
+        type: choice
+        options:
+          - latest
+          - rc
+          - beta
+          - alpha
+          - next
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  gate:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm exec nx run-many --target=lint
+      - run: pnpm exec nx run-many --target=test
+      - run: pnpm exec nx run-many --target=build
+
+  publish:
+    name: Publish Packages
+    needs: gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Guard stable release branch
+        if: inputs.channel == 'latest'
+        run: |
+          if [[ "${{ github.ref_name }}" != "main" ]]; then
+            echo "::error::Stable releases (latest) can only be published from the main branch."
+            exit 1
+          fi
+
+      - name: Version (stable)
+        if: inputs.channel == 'latest'
+        run: pnpm exec nx release version --verbose
+
+      - name: Version (pre-release)
+        if: inputs.channel != 'latest'
+        run: pnpm exec nx release version --preid ${{ inputs.channel }} --verbose
+
+      - name: Changelog
+        run: pnpm exec nx release changelog --verbose
+
+      - name: Build
+        run: pnpm exec nx run-many --target=build
+
+      - name: Publish
+        run: pnpm exec nx release publish --tag ${{ inputs.channel }} --verbose
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
