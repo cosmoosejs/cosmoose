@@ -86,5 +86,4 @@ jobs:
       - name: Publish
         run: pnpm exec nx release publish --tag ${{ inputs.channel }} --verbose
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
