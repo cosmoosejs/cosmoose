@@ -81,9 +81,25 @@ jobs:
             echo "flag=--first-release" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Resolve stable specifier
+        if: inputs.channel == 'latest'
+        id: stable-specifier
+        run: |
+          # If current version is a pre-release (e.g. 0.1.0-rc.1), graduate to
+          # its stable counterpart (0.1.0) by stripping the pre-release suffix.
+          # Otherwise, let conventional commits determine the bump.
+          FIRST_PKG=$(ls packages/*/package.json | head -1)
+          CURRENT=$(node -p "require('./$FIRST_PKG').version")
+          if [[ "$CURRENT" == *-* ]]; then
+            STABLE=${CURRENT%%-*}
+            echo "specifier=$STABLE" >> "$GITHUB_OUTPUT"
+          else
+            echo "specifier=" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Version + Changelog (stable)
         if: inputs.channel == 'latest'
-        run: pnpm exec nx release --skip-publish ${{ steps.first-release.outputs.flag }} --verbose
+        run: pnpm exec nx release --skip-publish ${{ steps.first-release.outputs.flag }} ${{ steps.stable-specifier.outputs.specifier && format('--specifier={0}', steps.stable-specifier.outputs.specifier) || '' }} --verbose
 
       - name: Version + Changelog (pre-release)
         if: inputs.channel != 'latest'
