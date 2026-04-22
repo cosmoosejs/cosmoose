@@ -1,3 +1,13 @@
+## 0.1.0-rc.2 (2026-04-22)
+
+### 🚀 Features
+
+- enhance release workflow to detect first release and adjust versioning accordingly ([d0ce33e](https://github.com/cosmoosejs/cosmoose/commit/d0ce33e))
+
+### ❤️ Thank You
+
+- pr1t3
+
 ## 0.1.0-rc.1 (2026-04-22)
 
 This was a version bump only, there were no code changes.
