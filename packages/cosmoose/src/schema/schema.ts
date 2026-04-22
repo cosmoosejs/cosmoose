@@ -244,6 +244,8 @@ export class Schema<T extends Record<string, unknown>> {
         return z.string().email();
       case Type.ANY:
         return z.any();
+      default:
+        throw new Error(`Unsupported primitive type: ${type as string}`);
     }
   }
 }
