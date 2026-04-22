@@ -1,6 +1,6 @@
 {
   "name": "@cosmoose/nestjs",
-  "version": "0.1.0",
+  "version": "0.1.0-rc.0",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -11,9 +11,16 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cosmoosejs/cosmoose",
+    "directory": "packages/cosmoose-nestjs"
   },
   "license": "ISC",
   "peerDependencies": {

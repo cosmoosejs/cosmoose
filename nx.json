@@ -41,23 +41,20 @@
   },
   "release": {
     "projects": ["cosmoose", "cosmoose-nestjs"],
+    "git": {
+      "commit": true,
+      "tag": true
+    },
     "version": {
       "conventionalCommits": true,
-      "fallbackCurrentVersionResolver": "disk",
-      "git": {
-        "commit": true,
-        "tag": true
-      }
+      "fallbackCurrentVersionResolver": "disk"
     },
     "changelog": {
+      "automaticFromRef": true,
       "workspaceChangelog": {
         "createRelease": false
       },
-      "projectChangelogs": true,
-      "git": {
-        "commit": true,
-        "tag": true
-      }
+      "projectChangelogs": true
     }
   },
   "analytics": true

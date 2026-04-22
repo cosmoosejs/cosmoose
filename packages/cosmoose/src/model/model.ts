@@ -307,7 +307,7 @@ export class Model<T extends Record<string, unknown>> {
       const bulkOps = batch.map((item) => ({
         operationType: BulkOperationType.Delete,
         id: item.id,
-        partitionKey: item.partitionKey.length === 1 ? item.partitionKey[0] : item.partitionKey,
+        partitionKey: (item.partitionKey.length === 1 ? item.partitionKey[0] : item.partitionKey) as PartitionKey,
       }));
       await this.container.items.bulk(bulkOps);
     }

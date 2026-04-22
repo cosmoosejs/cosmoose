@@ -44,6 +44,30 @@ describe('syncContainers Integration', () => {
     });
   });
 
+  describe('hierarchical partition key', () => {
+    it('should create a container with a hierarchical (MultiHash) partition key', async () => {
+      const schema = new Schema({
+        tenantId: { type: Type.STRING },
+        userId: { type: Type.STRING },
+        data: { type: Type.STRING },
+      }, {
+        container: {
+          partitionKey: { paths: [ '/tenantId', '/userId' ], kind: 'MultiHash' },
+        },
+      });
+
+      cosmoose.model('HierarchicalPKTest', schema);
+      const report = await cosmoose.syncContainers();
+
+      const result = report.find(r => r.name === 'HierarchicalPKTest');
+      expect(result).toBeDefined();
+
+      const { resource } = await client.database(dbName).container('HierarchicalPKTest').read();
+      expect(resource!.partitionKey!.paths).toEqual([ '/tenantId', '/userId' ]);
+      expect(resource!.partitionKey!.kind).toBe('MultiHash');
+    });
+  });
+
   describe('unique keys', () => {
     it('should create a container with unique key constraints', async () => {
       const schema = new Schema({
