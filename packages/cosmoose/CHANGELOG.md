@@ -1,3 +1,18 @@
+## 0.1.1 (2026-04-24)
+
+### 🚀 Features
+
+- add packageRoot option for nx-release-publish in project.json ([f3176c4](https://github.com/cosmoosejs/cosmoose/commit/f3176c4))
+
+### 🩹 Fixes
+
+- resolve npm publish issues by correcting package.json paths and TypeScript configuration ([c740c8a](https://github.com/cosmoosejs/cosmoose/commit/c740c8a))
+
+### ❤️ Thank You
+
+- Copilot
+- pr1t3
+
 ## 0.1.1-rc.1 (2026-04-24)
 
 ### 🚀 Features

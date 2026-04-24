@@ -1,6 +1,6 @@
 {
   "name": "@cosmoose/nestjs",
-  "version": "0.1.1-rc.1",
+  "version": "0.1.1",
   "type": "module",
   "main": "./index.js",
   "module": "./index.js",
