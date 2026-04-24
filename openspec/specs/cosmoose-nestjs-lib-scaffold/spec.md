@@ -26,12 +26,32 @@ The NestJS library SHALL be configured as a publishable npm package named `@cosm
 - **WHEN** `packages/cosmoose-nestjs/package.json` is inspected
 - **THEN** `@nestjs/common` and `@nestjs/core` SHALL be listed as `peerDependencies`
 
+#### Scenario: Explicit ./index.js entry point
+- **WHEN** `packages/cosmoose-nestjs/package.json` is inspected
+- **THEN** `main` SHALL be `./index.js`, `module` SHALL be `./index.js`, and `types` SHALL be `./index.d.ts`
+
+#### Scenario: Exports field
+- **WHEN** `packages/cosmoose-nestjs/package.json` is inspected
+- **THEN** the `exports` field SHALL map `.` to `./index.js` with a `types` condition pointing to `./index.d.ts`
+
+#### Scenario: Files filter
+- **WHEN** `packages/cosmoose-nestjs/package.json` is inspected
+- **THEN** the `files` field SHALL include `**/*.js`, `**/*.d.ts`, `**/*.js.map`, and `**/*.d.ts.map` patterns
+
 ### Requirement: Cosmoose NestJS build target
 The NestJS library SHALL have an Nx `build` target using `@nx/js:tsc`.
 
 #### Scenario: Build produces output
 - **WHEN** `nx build cosmoose-nestjs` is executed
 - **THEN** compiled JavaScript and declaration files SHALL be emitted to `dist/packages/cosmoose-nestjs`
+
+#### Scenario: Build output is flat
+- **WHEN** `nx build cosmoose-nestjs` is executed
+- **THEN** compiled files SHALL be emitted directly under `dist/packages/cosmoose-nestjs/` without a nested `src/` directory
+
+#### Scenario: TypeScript rootDir is set
+- **WHEN** `packages/cosmoose-nestjs/tsconfig.lib.json` is inspected
+- **THEN** `compilerOptions.rootDir` SHALL be `./src`
 
 #### Scenario: Build depends on core
 - **WHEN** `nx build cosmoose-nestjs` is executed

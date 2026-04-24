@@ -12,6 +12,7 @@
         "outputPath": "dist/packages/cosmoose",
         "tsConfig": "packages/cosmoose/tsconfig.lib.json",
         "main": "packages/cosmoose/src/index.ts",
+        "rootDir": "packages/cosmoose/src",
         "assets": ["packages/cosmoose/README.md"]
       },
       "dependsOn": ["^build"]
