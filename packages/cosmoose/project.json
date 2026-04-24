@@ -43,6 +43,11 @@
       "options": {
         "lintFilePatterns": ["packages/cosmoose/**/*.ts"]
       }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/packages/cosmoose"
+      }
     }
   }
 }
