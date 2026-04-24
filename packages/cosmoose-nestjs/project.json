@@ -12,6 +12,7 @@
         "outputPath": "dist/packages/cosmoose-nestjs",
         "tsConfig": "packages/cosmoose-nestjs/tsconfig.lib.json",
         "main": "packages/cosmoose-nestjs/src/index.ts",
+        "rootDir": "packages/cosmoose-nestjs/src",
         "assets": ["packages/cosmoose-nestjs/README.md"]
       },
       "dependsOn": ["^build"]
@@ -35,6 +36,11 @@
       "executor": "@nx/eslint:lint",
       "options": {
         "lintFilePatterns": ["packages/cosmoose-nestjs/**/*.ts"]
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/packages/cosmoose-nestjs"
       }
     }
   }

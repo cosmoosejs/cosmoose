@@ -22,12 +22,32 @@ The core library SHALL be configured as a publishable npm package named `@cosmoo
 - **WHEN** the package is built
 - **THEN** `package.json` SHALL define `main`, `module`, and `types` fields pointing to the build output
 
+#### Scenario: Explicit ./index.js entry point
+- **WHEN** `packages/cosmoose/package.json` is inspected
+- **THEN** `main` SHALL be `./index.js`, `module` SHALL be `./index.js`, and `types` SHALL be `./index.d.ts`
+
+#### Scenario: Exports field
+- **WHEN** `packages/cosmoose/package.json` is inspected
+- **THEN** the `exports` field SHALL map `.` to `./index.js` with a `types` condition pointing to `./index.d.ts`
+
+#### Scenario: Files filter
+- **WHEN** `packages/cosmoose/package.json` is inspected
+- **THEN** the `files` field SHALL include `**/*.js`, `**/*.d.ts`, `**/*.js.map`, and `**/*.d.ts.map` patterns
+
 ### Requirement: Cosmoose core build target
 The core library SHALL have an Nx `build` target using `@nx/js:tsc`.
 
 #### Scenario: Build produces output
 - **WHEN** `nx build cosmoose` is executed
 - **THEN** compiled JavaScript and declaration files SHALL be emitted to `dist/packages/cosmoose`
+
+#### Scenario: Build output is flat
+- **WHEN** `nx build cosmoose` is executed
+- **THEN** compiled files SHALL be emitted directly under `dist/packages/cosmoose/` without a nested `src/` directory
+
+#### Scenario: TypeScript rootDir is set
+- **WHEN** `packages/cosmoose/tsconfig.lib.json` is inspected
+- **THEN** `compilerOptions.rootDir` SHALL be `./src`
 
 ### Requirement: Cosmoose core test target
 The core library SHALL have an Nx `test` target using Vitest.
