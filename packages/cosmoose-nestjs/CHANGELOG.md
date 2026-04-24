@@ -1,3 +1,13 @@
+## 0.1.1-rc.1 (2026-04-24)
+
+### 🚀 Features
+
+- add packageRoot option for nx-release-publish in project.json ([f3176c4](https://github.com/cosmoosejs/cosmoose/commit/f3176c4))
+
+### ❤️ Thank You
+
+- pr1t3
+
 ## 0.1.1-rc.0 (2026-04-24)
 
 ### 🩹 Fixes
