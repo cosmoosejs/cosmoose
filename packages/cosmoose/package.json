@@ -1,5 +1,5 @@
 {
-  "name": "@cosmoose/core",
+  "name": "cosmoose",
   "version": "0.1.1",
   "type": "module",
   "main": "./index.js",

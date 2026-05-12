@@ -1,0 +1,23 @@
+{
+  "name": "cosmoose-deprecated",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/cosmoose-deprecated/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/packages/cosmoose-deprecated"],
+      "options": {
+        "commands": [
+          "mkdir -p dist/packages/cosmoose-deprecated",
+          "echo \"export * from 'cosmoose';\" > dist/packages/cosmoose-deprecated/index.js",
+          "echo \"export * from 'cosmoose';\" > dist/packages/cosmoose-deprecated/index.d.ts",
+          "cp packages/cosmoose-deprecated/package.json dist/packages/cosmoose-deprecated/package.json"
+        ],
+        "parallel": false
+      },
+      "dependsOn": ["^build"]
+    }
+  }
+}

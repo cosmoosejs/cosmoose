@@ -24,7 +24,7 @@
       "ssh2"
     ],
     "overrides": {
-      "@cosmoose/core": "workspace:*"
+      "cosmoose": "workspace:*"
     }
   },
   "devDependencies": {

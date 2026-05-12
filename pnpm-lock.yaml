@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@cosmoose/core': workspace:*
+  cosmoose: workspace:*
 
 importers:
 
@@ -153,17 +153,29 @@ importers:
         specifier: ^10.0.0
         version: 10.0.0
 
-  packages/cosmoose-nestjs:
+  packages/cosmoose-alias:
     dependencies:
-      '@cosmoose/core':
+      cosmoose:
         specifier: workspace:*
         version: link:../cosmoose
+
+  packages/cosmoose-deprecated:
+    dependencies:
+      cosmoose:
+        specifier: workspace:*
+        version: link:../cosmoose
+
+  packages/cosmoose-nestjs:
+    dependencies:
       '@nestjs/common':
         specifier: ^10.0.0 || ^11.0.0
         version: 11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core':
         specifier: ^10.0.0 || ^11.0.0
         version: 11.1.19(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      cosmoose:
+        specifier: workspace:*
+        version: link:../cosmoose
 
 packages:
 

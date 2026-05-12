@@ -115,7 +115,7 @@ if (process.env.NODE_ENV === 'development') {
 ### CI/CD: Sync as a migration step
 
 ```ts title="migrate.ts"
-import { Cosmoose } from '@cosmoose/core';
+import { Cosmoose } from 'cosmoose';
 
 const cosmoose = new Cosmoose({ /* config */ });
 await cosmoose.connect();

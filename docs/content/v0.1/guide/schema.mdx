@@ -8,7 +8,7 @@ A `Schema` defines the shape and validation rules for documents in a Cosmos DB c
 ## Defining a Schema
 
 ```ts title="schema.ts"
-import { Schema, Type } from '@cosmoose/core';
+import { Schema, Type } from 'cosmoose';
 
 interface Product {
   name: string;
@@ -156,7 +156,7 @@ When `timestamps: true`, the model automatically adds and manages:
 Schemas use [Zod](https://zod.dev) internally for validation. When validation fails, a `SchemaValidationFailedException` is thrown:
 
 ```ts title="index.ts"
-import { SchemaValidationFailedException } from '@cosmoose/core';
+import { SchemaValidationFailedException } from 'cosmoose';
 
 try {
   await User.create({ name: 123 }); // wrong type

@@ -17,13 +17,13 @@ A type-safe ODM for Azure Cosmos DB, built with TypeScript.
 ## Install
 
 ```bash
-pnpm add @cosmoose/core
+pnpm add cosmoose
 ```
 
 ## Quick Start
 
 ```ts
-import { Cosmoose, Schema, Type } from '@cosmoose/core';
+import { Cosmoose, Schema, Type } from 'cosmoose';
 
 // 1. Connect
 const cosmoose = new Cosmoose({

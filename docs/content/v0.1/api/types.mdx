@@ -8,7 +8,7 @@ description: API reference for Type enum, Document, PatchExpression, and other t
 Field type identifiers used in schema definitions.
 
 ```ts title="index.ts"
-import { Type } from '@cosmoose/core';
+import { Type } from 'cosmoose';
 ```
 
 | Value | Description |
@@ -188,7 +188,7 @@ function generateId(): string
 Generates a UUID v7 string (no hyphens). Used automatically by `Model.create()` but can be called directly:
 
 ```ts title="index.ts"
-import { generateId } from '@cosmoose/core';
+import { generateId } from 'cosmoose';
 
 const id = generateId(); // e.g. '019756a0b5947d3a8e4c1f2b3d4e5f6a'
 ```

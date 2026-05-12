@@ -1,0 +1,23 @@
+{
+  "name": "cosmoose-alias",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/cosmoose-alias/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/packages/cosmoose-alias"],
+      "options": {
+        "commands": [
+          "mkdir -p dist/packages/cosmoose-alias",
+          "echo \"export * from 'cosmoose';\" > dist/packages/cosmoose-alias/index.js",
+          "echo \"export * from 'cosmoose';\" > dist/packages/cosmoose-alias/index.d.ts",
+          "cp packages/cosmoose-alias/package.json dist/packages/cosmoose-alias/package.json"
+        ],
+        "parallel": false
+      },
+      "dependsOn": ["^build"]
+    }
+  }
+}

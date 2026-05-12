@@ -3,9 +3,9 @@
 import { useState } from 'react';
 
 const commands = [
-  { label: 'pnpm', command: 'pnpm add @cosmoose/core' },
-  { label: 'yarn', command: 'yarn add @cosmoose/core' },
-  { label: 'npm', command: 'npm install @cosmoose/core' },
+  { label: 'pnpm', command: 'pnpm add cosmoose' },
+  { label: 'yarn', command: 'yarn add cosmoose' },
+  { label: 'npm', command: 'npm install cosmoose' },
 ];
 
 export function InstallTabs() {
