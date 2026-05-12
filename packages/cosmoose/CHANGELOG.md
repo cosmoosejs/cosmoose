@@ -1,3 +1,15 @@
+## 0.2.0-rc.0 (2026-05-12)
+
+### 🚀 Features
+
+- rename core package to 'cosmoose' and create alias '@cosmoose/cosmoose' ([00b284a](https://github.com/cosmoosejs/cosmoose/commit/00b284a))
+- plan for rename core package to 'cosmoose' and add alias for '@cosmoose/cosmoose' ([29d72ad](https://github.com/cosmoosejs/cosmoose/commit/29d72ad))
+
+### ❤️ Thank You
+
+- Copilot
+- pr1t3
+
 ## 0.1.1 (2026-04-24)
 
 ### 🚀 Features
@@ -28,11 +40,6 @@
 ### 🩹 Fixes
 
 - resolve npm publish issues by correcting package.json paths and TypeScript configuration ([c740c8a](https://github.com/cosmoosejs/cosmoose/commit/c740c8a))
-
-### ❤️ Thank You
-
-- Copilot
-- pr1t3
 
 ## 0.1.0 (2026-04-22)
 
