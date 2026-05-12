@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { InstallTabs } from '@/components/install-tabs';
 
-const quickStart = `import { Cosmoose, Schema, Type } from '@cosmoose/core';
+const quickStart = `import { Cosmoose, Schema, Type } from 'cosmoose';
 
 // Connect
 const cosmoose = new Cosmoose({

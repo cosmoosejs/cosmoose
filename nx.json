@@ -40,7 +40,7 @@
     }
   },
   "release": {
-    "projects": ["cosmoose", "cosmoose-nestjs"],
+    "projects": ["cosmoose", "cosmoose-alias", "cosmoose-deprecated", "cosmoose-nestjs"],
     "git": {
       "commit": true,
       "tag": true

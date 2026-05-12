@@ -1,5 +1,5 @@
 {
-  "name": "cosmoose",
+  "name": "@cosmoose/cosmoose",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,15 +20,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/cosmoosejs/cosmoose",
-    "directory": "packages/cosmoose"
+    "directory": "packages/cosmoose-alias"
   },
   "license": "ISC",
   "dependencies": {
-    "@azure/cosmos": "^4.2.0",
-    "uuid": "^11.1.0",
-    "zod": "^3.24.0"
-  },
-  "devDependencies": {
-    "@types/uuid": "^10.0.0"
+    "cosmoose": "^0.1.0"
   }
 }

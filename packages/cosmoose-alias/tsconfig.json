@@ -7,17 +7,11 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "~/*": ["packages/cosmoose/src/*"],
-      "cosmoose": ["packages/cosmoose/src/index.ts"],
-      "@cosmoose/nestjs": ["packages/cosmoose-nestjs/src/index.ts"]
-    }
+    "noFallthroughCasesInSwitch": true
   },
   "files": [],
   "include": [],
   "references": [
-    { "path": "./tsconfig.lib.json" },
-    { "path": "./tsconfig.spec.json" }
+    { "path": "./tsconfig.lib.json" }
   ]
 }

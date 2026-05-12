@@ -1,7 +1,8 @@
 {
-  "name": "cosmoose",
+  "name": "@cosmoose/core",
   "version": "0.1.0",
   "type": "module",
+  "deprecated": "Renamed to 'cosmoose'. Install 'cosmoose' or '@cosmoose/cosmoose' instead.",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,15 +21,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/cosmoosejs/cosmoose",
-    "directory": "packages/cosmoose"
+    "directory": "packages/cosmoose-deprecated"
   },
   "license": "ISC",
   "dependencies": {
-    "@azure/cosmos": "^4.2.0",
-    "uuid": "^11.1.0",
-    "zod": "^3.24.0"
-  },
-  "devDependencies": {
-    "@types/uuid": "^10.0.0"
+    "cosmoose": "^0.1.0"
   }
 }

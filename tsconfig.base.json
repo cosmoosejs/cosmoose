@@ -20,7 +20,7 @@
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
-      "@cosmoose/core": ["packages/cosmoose/src/index.ts"],
+      "cosmoose": ["packages/cosmoose/src/index.ts"],
       "@cosmoose/nestjs": ["packages/cosmoose-nestjs/src/index.ts"]
     }
   },

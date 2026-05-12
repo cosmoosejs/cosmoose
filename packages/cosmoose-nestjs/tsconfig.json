@@ -10,7 +10,6 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "~/*": ["packages/cosmoose-nestjs/src/*"],
-      "@cosmoose/core": ["packages/cosmoose/src/index.ts"],
       "@cosmoose/nestjs": ["packages/cosmoose-nestjs/src/index.ts"]
     }
   },
