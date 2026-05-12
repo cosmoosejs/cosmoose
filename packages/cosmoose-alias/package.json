@@ -24,6 +24,6 @@
   },
   "license": "ISC",
   "dependencies": {
-    "cosmoose": "workspace:*"
+    "cosmoose": "workspace:^"
   }
 }

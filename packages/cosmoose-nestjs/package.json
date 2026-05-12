@@ -27,7 +27,7 @@
   },
   "license": "ISC",
   "peerDependencies": {
-    "cosmoose": "^0.1.0",
+    "cosmoose": "workspace:^",
     "@nestjs/common": "^10.0.0 || ^11.0.0",
     "@nestjs/core": "^10.0.0 || ^11.0.0"
   }
