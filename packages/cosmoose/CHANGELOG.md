@@ -1,3 +1,13 @@
+## 0.2.0-rc.1 (2026-05-13)
+
+### 🚀 Features
+
+- update package structure to use 'src' instead of 'dist' for main files ([5b27af8](https://github.com/cosmoosejs/cosmoose/commit/5b27af8))
+
+### ❤️ Thank You
+
+- pr1t3
+
 ## 0.2.0-rc.0 (2026-05-12)
 
 ### 🚀 Features

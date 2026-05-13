@@ -1,6 +1,6 @@
 {
   "name": "@cosmoose/cosmoose",
-  "version": "0.2.0-rc.0",
+  "version": "0.2.0-rc.1",
   "type": "module",
   "main": "./index.js",
   "module": "./index.js",
