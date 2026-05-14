@@ -20,6 +20,12 @@ A type-safe ODM for Azure Cosmos DB, built with TypeScript.
 pnpm add cosmoose
 ```
 
+Also available as `@cosmoose/cosmoose`:
+
+```bash
+pnpm add @cosmoose/cosmoose
+```
+
 ## Quick Start
 
 ```ts
