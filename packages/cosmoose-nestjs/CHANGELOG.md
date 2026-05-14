@@ -1,3 +1,7 @@
+## 0.2.0-rc.2 (2026-05-14)
+
+This was a version bump only for cosmoose-nestjs to align it with other projects, there were no code changes.
+
 ## 0.2.0-rc.1 (2026-05-13)
 
 ### 🚀 Features

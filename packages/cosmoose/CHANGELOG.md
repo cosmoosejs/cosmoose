@@ -1,3 +1,14 @@
+## 0.2.0-rc.2 (2026-05-14)
+
+### 🚀 Features
+
+- add alias for package name in documentation ([d3c1322](https://github.com/cosmoosejs/cosmoose/commit/d3c1322))
+
+### ❤️ Thank You
+
+- Copilot
+- pr1t3
+
 ## 0.2.0-rc.1 (2026-05-13)
 
 ### 🚀 Features
